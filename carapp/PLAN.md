@@ -263,3 +263,8 @@ ce.temp + operationScheduling.duration ✅ 已验证
 顶栏（车名+chevron ｜ 空调/锁/后备箱/P/车牌）-> 46pt 续航大字 + 更新时间徽章 -> 双色续航条 ->
 油电明细 -> 40% 屏高 3D 车模 -> 四个圆按钮 -> 短线分页器 -> 两张并排大卡（充电 ｜ 车内温度+风扇按钮）->
 车窗/天窗功能行 -> 预约/钥匙两行列表。
+
+
+## Release
+
+- v0.5.0 (2026-11-23): https://github.com/ZHIFANSONG/LynkCoHelper/releases/download/v0.5.0/CarCtrl-unsigned-v0.5.0.ipa

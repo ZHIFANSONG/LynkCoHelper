@@ -302,7 +302,7 @@ struct SettingsView: View {
                 Text("关于")
                     .font(.system(size: 13.5, weight: .semibold))
                     .foregroundStyle(Palette.text(scheme))
-                row("版本", "0.6.0")
+                row("版本", "0.7.0")
                 row("车型", "领克 07 EM-P（DS11）")
                 row("网关", "gric-g-api.geely.com")
                 Text("本 App 通过抓包还原的接口与车辆通信，不是官方客户端。凭据过期（约 7 天）需重新获取。")

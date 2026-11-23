@@ -120,31 +120,27 @@ struct ContentView: View {
     private let fuelBlue = Color(red: 0.24, green: 0.55, blue: 0.98)
     private let accentBlue = Color(red: 0.16, green: 0.47, blue: 1.0)
 
-    /// 页面底色：上部与展厅天光同系，向下过渡到普通底色。
-    /// 这样 topBar/rangeBlock（透明背景）压上去不会有「黑底断层」。
-    private var pageBackdrop: some View {
-        LinearGradient(
-            stops: [
-                .init(color: scheme == .dark
-                      ? Color(red: 0.16, green: 0.19, blue: 0.26)
-                      : Color(red: 0.88, green: 0.91, blue: 0.95), location: 0),
-                .init(color: scheme == .dark
-                      ? Color(red: 0.20, green: 0.21, blue: 0.26)
-                      : Color(red: 0.91, green: 0.92, blue: 0.93), location: 0.42),
-                .init(color: Palette.bg(scheme), location: 1),
-            ],
-            startPoint: .top, endPoint: .bottom)
-        .ignoresSafeArea()
-    }
-
     var body: some View {
         ZStack(alignment: .top) {
-            pageBackdrop
+            // 页面底色：顶部与黄昏天空衔接（信息栏透出天空色，不再断层）
+            LinearGradient(
+                stops: [
+                    .init(color: scheme == .dark
+                          ? Color(red: 0.075, green: 0.065, blue: 0.16)
+                          : Color(red: 0.55, green: 0.66, blue: 0.80), location: 0),
+                    .init(color: scheme == .dark
+                          ? Color(red: 0.12, green: 0.10, blue: 0.20)
+                          : Color(red: 0.68, green: 0.76, blue: 0.86), location: 0.18),
+                    .init(color: Palette.bg(scheme), location: 0.55),
+                ],
+                startPoint: .top, endPoint: .bottom)
+            .ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
                     topBar
                     rangeBlock
+                    // 场景区域：天空从信息栏底下开始铺
                     carStage
                     actionRow
                     pager
@@ -346,9 +342,6 @@ struct ContentView: View {
 
     private var carStage: some View {
         ZStack(alignment: .topLeading) {
-            // 展厅地台：车下的圆盘 + 地平线渐变（替代纯黑/纯色背景）
-            carFloor
-
             if let m = sceneModel {
                 SceneKitCarView(model: m, paint: store.paint, ref: carViewRef)
                     // ★ 不能 allowsHitTesting(false)，否则手指拖不动
@@ -357,82 +350,10 @@ struct ContentView: View {
                 ProgressView().tint(Palette.sub(scheme))
             }
 
-            // 地面反光
-            Ellipse()
-                .fill(RadialGradient(
-                    colors: [Color.black.opacity(scheme == .dark ? 0.5 : 0.16), .clear],
-                    center: .center, startRadius: 6, endRadius: 160))
-                .frame(width: 280, height: 44)
-                .blur(radius: 14)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                .offset(y: -14)
-                .allowsHitTesting(false)
-
             paintChip.padding(.leading, 20).padding(.top, 4)
         }
-        .frame(height: UIScreen.main.bounds.height * 0.40)
+        .frame(height: UIScreen.main.bounds.height * 0.46)
         .contentShape(Rectangle())
-    }
-
-    /// 车周环境：地平线渐变 + 展厅圆盘地台。
-    /// SCNView 背景 clear，整段视觉全靠这里铺，保证顶部信息栏与车区无缝衔接。
-    private var carFloor: some View {
-        GeometryReader { geo in
-            let w = geo.size.width
-            let h = geo.size.height
-            let groundY = h * 0.78
-
-            // 天光渐变（上半）到地面色（下半），色系参考小米车控页展厅
-            Rectangle()
-                .fill(
-                    LinearGradient(
-                        stops: [
-                            .init(color: scheme == .dark
-                                  ? Color(red: 0.16, green: 0.19, blue: 0.26)
-                                  : Color(red: 0.88, green: 0.91, blue: 0.95), location: 0),
-                            .init(color: scheme == .dark
-                                  ? Color(red: 0.22, green: 0.24, blue: 0.30)
-                                  : Color(red: 0.93, green: 0.93, blue: 0.91), location: 0.52),
-                            .init(color: scheme == .dark
-                                  ? Color(red: 0.10, green: 0.11, blue: 0.14)
-                                  : Color(red: 0.87, green: 0.87, blue: 0.85), location: 0.78),
-                            .init(color: scheme == .dark
-                                  ? Color(red: 0.08, green: 0.09, blue: 0.12)
-                                  : Color(red: 0.84, green: 0.84, blue: 0.83), location: 1),
-                        ],
-                        startPoint: .top, endPoint: .bottom))
-                .ignoresSafeArea(edges: .top)
-
-            // 展厅圆盘地台（车正下方）
-            Ellipse()
-                .fill(
-                    RadialGradient(
-                        colors: scheme == .dark
-                            ? [Color(red: 0.26, green: 0.28, blue: 0.34),
-                               Color(red: 0.20, green: 0.21, blue: 0.26).opacity(0.9),
-                               Color(red: 0.12, green: 0.13, blue: 0.16).opacity(0)]
-                            : [Color(red: 0.97, green: 0.97, blue: 0.96),
-                               Color(red: 0.93, green: 0.93, blue: 0.92).opacity(0.9),
-                               Color(red: 0.88, green: 0.88, blue: 0.87).opacity(0)],
-                        center: .center, startRadius: 4, endRadius: w * 0.34))
-                .frame(width: w * 0.66, height: w * 0.66 * 0.30)
-                .position(x: w / 2, y: groundY + h * 0.10)
-                .allowsHitTesting(false)
-
-            // 地台边缘细高光圈，增加「舞台」感
-            Ellipse()
-                .strokeBorder(
-                    LinearGradient(
-                        colors: scheme == .dark
-                            ? [Color.white.opacity(0.14), Color.white.opacity(0.02)]
-                            : [Color.white.opacity(0.7), Color.white.opacity(0.1)],
-                        startPoint: .top, endPoint: .bottom),
-                    lineWidth: 1)
-                .frame(width: w * 0.66, height: w * 0.66 * 0.30)
-                .position(x: w / 2, y: groundY + h * 0.10)
-                .allowsHitTesting(false)
-        }
-        .allowsHitTesting(false)
     }
 
     private var paintChip: some View {
@@ -855,9 +776,11 @@ struct SceneKitCarView: UIViewRepresentable {
     let model: CarModel
     let paint: Color
     let ref: CarViewModel
+    @Environment(\.colorScheme) private var scheme
 
     func makeUIView(context: Context) -> CarSceneView {
         let v = CarSceneView(frame: .zero)
+        v.sceneDayMode = (scheme != .dark)
         v.load(model, paint: UIColor(paint))
         v.startTurntable(false)
         ref.attach(v)
@@ -866,5 +789,6 @@ struct SceneKitCarView: UIViewRepresentable {
 
     func updateUIView(_ uiView: CarSceneView, context: Context) {
         uiView.setPaint(UIColor(paint))
+        uiView.sceneDayMode = (scheme != .dark)
     }
 }

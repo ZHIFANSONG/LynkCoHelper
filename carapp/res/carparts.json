@@ -1,0 +1,2153 @@
+{
+ "version": 3,
+ "nodes": [
+  {
+   "name": "Lynkco0726_EXT",
+   "children": [
+    1
+   ]
+  },
+  {
+   "name": "RootNode",
+   "children": [
+    2
+   ]
+  },
+  {
+   "name": "Lykco07",
+   "children": [
+    3
+   ]
+  },
+  {
+   "name": "Ext",
+   "children": [
+    4,
+    8,
+    12,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62
+   ]
+  },
+  {
+   "name": "CD",
+   "children": [
+    5,
+    6,
+    7
+   ]
+  },
+  {
+   "name": "Ext_91",
+   "children": []
+  },
+  {
+   "name": "Ext_92",
+   "children": []
+  },
+  {
+   "name": "Ext_120.001",
+   "children": []
+  },
+  {
+   "name": "JY",
+   "children": [
+    9,
+    10,
+    11
+   ]
+  },
+  {
+   "name": "Ext_93",
+   "children": []
+  },
+  {
+   "name": "Ext_103.001",
+   "children": []
+  },
+  {
+   "name": "Ext_128",
+   "children": []
+  },
+  {
+   "name": "YQG",
+   "children": [
+    13,
+    14
+   ]
+  },
+  {
+   "name": "Ext_72",
+   "children": []
+  },
+  {
+   "name": "EXT_99",
+   "children": []
+  },
+  {
+   "name": "Ext_101",
+   "children": []
+  },
+  {
+   "name": "Ext_121",
+   "children": []
+  },
+  {
+   "name": "Ext_02",
+   "children": []
+  },
+  {
+   "name": "Ext_03",
+   "children": []
+  },
+  {
+   "name": "Ext_06",
+   "children": []
+  },
+  {
+   "name": "Ext_09",
+   "children": []
+  },
+  {
+   "name": "Ext_37",
+   "children": []
+  },
+  {
+   "name": "Ext_47",
+   "children": []
+  },
+  {
+   "name": "Ext_24",
+   "children": []
+  },
+  {
+   "name": "Ext_35",
+   "children": []
+  },
+  {
+   "name": "Ext_104",
+   "children": []
+  },
+  {
+   "name": "Ext_39",
+   "children": []
+  },
+  {
+   "name": "Ext_59",
+   "children": []
+  },
+  {
+   "name": "Ext_40",
+   "children": []
+  },
+  {
+   "name": "Ext_49",
+   "children": []
+  },
+  {
+   "name": "Ext_31",
+   "children": []
+  },
+  {
+   "name": "Ext_19",
+   "children": []
+  },
+  {
+   "name": "Ext_88",
+   "children": []
+  },
+  {
+   "name": "Ext_07",
+   "children": []
+  },
+  {
+   "name": "Ext_112",
+   "children": []
+  },
+  {
+   "name": "Ext_107",
+   "children": []
+  },
+  {
+   "name": "Ext_110",
+   "children": []
+  },
+  {
+   "name": "Ext_52",
+   "children": []
+  },
+  {
+   "name": "Ext_120",
+   "children": []
+  },
+  {
+   "name": "Ext_124",
+   "children": []
+  },
+  {
+   "name": "Ext_108",
+   "children": []
+  },
+  {
+   "name": "Ext_122",
+   "children": []
+  },
+  {
+   "name": "Ext_131",
+   "children": []
+  },
+  {
+   "name": "Ext_102",
+   "children": []
+  },
+  {
+   "name": "Ext_130",
+   "children": []
+  },
+  {
+   "name": "Ext_152",
+   "children": []
+  },
+  {
+   "name": "Ext_232",
+   "children": []
+  },
+  {
+   "name": "Ext_231",
+   "children": []
+  },
+  {
+   "name": "Ext_230",
+   "children": []
+  },
+  {
+   "name": "Ext_226",
+   "children": []
+  },
+  {
+   "name": "Ext_222",
+   "children": []
+  },
+  {
+   "name": "Ext_212",
+   "children": []
+  },
+  {
+   "name": "Ext_213",
+   "children": []
+  },
+  {
+   "name": "Ext_214",
+   "children": []
+  },
+  {
+   "name": "Ext_220",
+   "children": []
+  },
+  {
+   "name": "Ext_216",
+   "children": []
+  },
+  {
+   "name": "Ext_211",
+   "children": []
+  },
+  {
+   "name": "Ext_221",
+   "children": []
+  },
+  {
+   "name": "Ext_103",
+   "children": []
+  },
+  {
+   "name": "Ext_219",
+   "children": []
+  },
+  {
+   "name": "Ext_228",
+   "children": []
+  },
+  {
+   "name": "Ext_177",
+   "children": []
+  },
+  {
+   "name": "Ext_127",
+   "children": []
+  },
+  {
+   "name": "Lynkco0726_INT",
+   "children": [
+    64
+   ]
+  },
+  {
+   "name": "RootNode",
+   "children": [
+    65
+   ]
+  },
+  {
+   "name": "Lykco07",
+   "children": [
+    66
+   ]
+  },
+  {
+   "name": "INT",
+   "children": [
+    67,
+    72,
+    75,
+    77,
+    79,
+    82,
+    85,
+    87,
+    91,
+    92,
+    93
+   ]
+  },
+  {
+   "name": "FSX",
+   "children": [
+    68,
+    69,
+    70,
+    71
+   ]
+  },
+  {
+   "name": "INT_01",
+   "children": []
+  },
+  {
+   "name": "INT_33",
+   "children": []
+  },
+  {
+   "name": "INT_32",
+   "children": []
+  },
+  {
+   "name": "INT_31",
+   "children": []
+  },
+  {
+   "name": "Seat",
+   "children": [
+    73,
+    74
+   ]
+  },
+  {
+   "name": "INT_03",
+   "children": []
+  },
+  {
+   "name": "INT_02",
+   "children": []
+  },
+  {
+   "name": "Zhongkong",
+   "children": [
+    76
+   ]
+  },
+  {
+   "name": "INT_04",
+   "children": []
+  },
+  {
+   "name": "Fxp",
+   "children": [
+    78
+   ]
+  },
+  {
+   "name": "INT_05",
+   "children": []
+  },
+  {
+   "name": "DiTan",
+   "children": [
+    80,
+    81
+   ]
+  },
+  {
+   "name": "INT_06",
+   "children": []
+  },
+  {
+   "name": "INT_20",
+   "children": []
+  },
+  {
+   "name": "HouBeXiang",
+   "children": [
+    83,
+    84
+   ]
+  },
+  {
+   "name": "INT_07",
+   "children": []
+  },
+  {
+   "name": "INT_34",
+   "children": []
+  },
+  {
+   "name": "PINMU",
+   "children": [
+    86
+   ]
+  },
+  {
+   "name": "INT_08",
+   "children": []
+  },
+  {
+   "name": "Qita",
+   "children": [
+    88,
+    89,
+    90
+   ]
+  },
+  {
+   "name": "INT_09",
+   "children": []
+  },
+  {
+   "name": "INT_10",
+   "children": []
+  },
+  {
+   "name": "INT_35",
+   "children": []
+  },
+  {
+   "name": "INT_11",
+   "children": []
+  },
+  {
+   "name": "INT_12",
+   "children": []
+  },
+  {
+   "name": "INT_13",
+   "children": []
+  },
+  {
+   "name": "Lynkco0726_Trunk",
+   "children": [
+    95
+   ]
+  },
+  {
+   "name": "RootNode",
+   "children": [
+    96
+   ]
+  },
+  {
+   "name": "Lykco07",
+   "children": [
+    97
+   ]
+  },
+  {
+   "name": "Trunk",
+   "children": [
+    98,
+    102
+   ]
+  },
+  {
+   "name": "Trunk_INT",
+   "children": [
+    99,
+    100,
+    101
+   ]
+  },
+  {
+   "name": "Trunk_INT_01",
+   "children": []
+  },
+  {
+   "name": "Trunk_INT_02",
+   "children": []
+  },
+  {
+   "name": "Trunk_INT_03",
+   "children": []
+  },
+  {
+   "name": "Trunk_Ext",
+   "children": [
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115,
+    116,
+    117,
+    118,
+    119
+   ]
+  },
+  {
+   "name": "Trunk_33",
+   "children": []
+  },
+  {
+   "name": "Trunk_9",
+   "children": []
+  },
+  {
+   "name": "Trunk_22",
+   "children": []
+  },
+  {
+   "name": "Trunk_29",
+   "children": []
+  },
+  {
+   "name": "Trunk_7",
+   "children": []
+  },
+  {
+   "name": "Trunk_10",
+   "children": []
+  },
+  {
+   "name": "Trunk_15",
+   "children": []
+  },
+  {
+   "name": "Trunk_17",
+   "children": []
+  },
+  {
+   "name": "Trunk_12",
+   "children": []
+  },
+  {
+   "name": "Trunk_14",
+   "children": []
+  },
+  {
+   "name": "Trunk_1",
+   "children": []
+  },
+  {
+   "name": "Trunk_31",
+   "children": []
+  },
+  {
+   "name": "Trunk_21",
+   "children": []
+  },
+  {
+   "name": "Trunk_30",
+   "children": []
+  },
+  {
+   "name": "Trunk_32",
+   "children": []
+  },
+  {
+   "name": "Trunk_36",
+   "children": []
+  },
+  {
+   "name": "Trunk_34",
+   "children": []
+  },
+  {
+   "name": "Lynkco0726_LBDoor",
+   "children": [
+    121
+   ]
+  },
+  {
+   "name": "RootNode",
+   "children": [
+    122
+   ]
+  },
+  {
+   "name": "Lykco07",
+   "children": [
+    123
+   ]
+  },
+  {
+   "name": "LBDoor",
+   "children": [
+    124,
+    128,
+    137
+   ]
+  },
+  {
+   "name": "LBDoor_INT",
+   "children": [
+    125,
+    126,
+    127
+   ]
+  },
+  {
+   "name": "LBDoor_INT_01",
+   "children": []
+  },
+  {
+   "name": "LBDoor_INT_03",
+   "children": []
+  },
+  {
+   "name": "LBDoor_INT_04",
+   "children": []
+  },
+  {
+   "name": "LBDoor_Ext",
+   "children": [
+    129,
+    130,
+    131,
+    132,
+    133,
+    134,
+    135,
+    136
+   ]
+  },
+  {
+   "name": "LBDoor_06",
+   "children": []
+  },
+  {
+   "name": "LBDoor_01",
+   "children": []
+  },
+  {
+   "name": "LBDoor_16",
+   "children": []
+  },
+  {
+   "name": "LBDoor_03",
+   "children": []
+  },
+  {
+   "name": "LBDoor_19",
+   "children": []
+  },
+  {
+   "name": "LBDoor_20",
+   "children": []
+  },
+  {
+   "name": "LBDoor_04",
+   "children": []
+  },
+  {
+   "name": "LBDoor_28",
+   "children": []
+  },
+  {
+   "name": "LBDoor_Men",
+   "children": [
+    138,
+    139
+   ]
+  },
+  {
+   "name": "LBDoor_07",
+   "children": []
+  },
+  {
+   "name": "LBDoor_08",
+   "children": []
+  },
+  {
+   "name": "Lynkco0726_LFDoor",
+   "children": [
+    141
+   ]
+  },
+  {
+   "name": "RootNode",
+   "children": [
+    142
+   ]
+  },
+  {
+   "name": "Lykco07",
+   "children": [
+    143
+   ]
+  },
+  {
+   "name": "LFDoor",
+   "children": [
+    144,
+    148,
+    160
+   ]
+  },
+  {
+   "name": "LFDoor_INT",
+   "children": [
+    145,
+    146,
+    147
+   ]
+  },
+  {
+   "name": "LFDoor_INT_01",
+   "children": []
+  },
+  {
+   "name": "LFDoor_INT_07",
+   "children": []
+  },
+  {
+   "name": "LFDoor_INT_08",
+   "children": []
+  },
+  {
+   "name": "LFDoor_Ext",
+   "children": [
+    149,
+    150,
+    151,
+    152,
+    153,
+    154,
+    155,
+    156,
+    157,
+    158,
+    159
+   ]
+  },
+  {
+   "name": "LFDoor_7",
+   "children": []
+  },
+  {
+   "name": "LFDoor_15",
+   "children": []
+  },
+  {
+   "name": "LFDoor_24",
+   "children": []
+  },
+  {
+   "name": "LFDoor_10",
+   "children": []
+  },
+  {
+   "name": "LFDoor_23",
+   "children": []
+  },
+  {
+   "name": "LFDoor_5",
+   "children": []
+  },
+  {
+   "name": "LFDoor_16",
+   "children": []
+  },
+  {
+   "name": "LFDoor_26",
+   "children": []
+  },
+  {
+   "name": "LFDoor_27",
+   "children": []
+  },
+  {
+   "name": "LFDoor_25",
+   "children": []
+  },
+  {
+   "name": "LFDoor_28",
+   "children": []
+  },
+  {
+   "name": "LFDoor_Men",
+   "children": [
+    161,
+    162
+   ]
+  },
+  {
+   "name": "LFDoor_24.001",
+   "children": []
+  },
+  {
+   "name": "LFDoor_26.001",
+   "children": []
+  },
+  {
+   "name": "Lynkco0726_RBDoor",
+   "children": [
+    164
+   ]
+  },
+  {
+   "name": "RootNode",
+   "children": [
+    165
+   ]
+  },
+  {
+   "name": "Lykco07",
+   "children": [
+    166
+   ]
+  },
+  {
+   "name": "RBDoor",
+   "children": [
+    167,
+    171,
+    181
+   ]
+  },
+  {
+   "name": "RBDoor_INT",
+   "children": [
+    168,
+    169,
+    170
+   ]
+  },
+  {
+   "name": "RBDoor_INT_01",
+   "children": []
+  },
+  {
+   "name": "RBDoor_INT_03",
+   "children": []
+  },
+  {
+   "name": "RBDoor_INT_04",
+   "children": []
+  },
+  {
+   "name": "RBDoor_Ext",
+   "children": [
+    172,
+    173,
+    174,
+    175,
+    176,
+    177,
+    178,
+    179,
+    180
+   ]
+  },
+  {
+   "name": "LBDoor_2",
+   "children": []
+  },
+  {
+   "name": "LBDoor_15",
+   "children": []
+  },
+  {
+   "name": "LBDoor_3",
+   "children": []
+  },
+  {
+   "name": "LBDoor_14",
+   "children": []
+  },
+  {
+   "name": "LBDoor_8",
+   "children": []
+  },
+  {
+   "name": "LBDoor_12",
+   "children": []
+  },
+  {
+   "name": "LBDoor_13",
+   "children": []
+  },
+  {
+   "name": "RBDoor_21",
+   "children": []
+  },
+  {
+   "name": "RBDoor_29",
+   "children": []
+  },
+  {
+   "name": "RBDoor_Men",
+   "children": [
+    182,
+    183
+   ]
+  },
+  {
+   "name": "LBDoor_6",
+   "children": []
+  },
+  {
+   "name": "LBDoor_7",
+   "children": []
+  },
+  {
+   "name": "Lynkco0726_RFDoor",
+   "children": [
+    185
+   ]
+  },
+  {
+   "name": "RootNode",
+   "children": [
+    186
+   ]
+  },
+  {
+   "name": "Lykco07",
+   "children": [
+    187
+   ]
+  },
+  {
+   "name": "RFDoor",
+   "children": [
+    188,
+    192,
+    204
+   ]
+  },
+  {
+   "name": "RFDoor_INT",
+   "children": [
+    189,
+    190,
+    191
+   ]
+  },
+  {
+   "name": "RFDoor_INT_01",
+   "children": []
+  },
+  {
+   "name": "RFDoor_INT_03",
+   "children": []
+  },
+  {
+   "name": "RFDoor_INT_04",
+   "children": []
+  },
+  {
+   "name": "RFDoor_Ext",
+   "children": [
+    193,
+    194,
+    195,
+    196,
+    197,
+    198,
+    199,
+    200,
+    201,
+    202,
+    203
+   ]
+  },
+  {
+   "name": "RFDoor_31",
+   "children": []
+  },
+  {
+   "name": "RFDoor_26",
+   "children": []
+  },
+  {
+   "name": "RFDoor_27",
+   "children": []
+  },
+  {
+   "name": "RFDoor_30",
+   "children": []
+  },
+  {
+   "name": "RFDoor_01",
+   "children": []
+  },
+  {
+   "name": "RFDoor_02",
+   "children": []
+  },
+  {
+   "name": "RFDoor_28",
+   "children": []
+  },
+  {
+   "name": "RFDoor_29",
+   "children": []
+  },
+  {
+   "name": "RFDoor_03",
+   "children": []
+  },
+  {
+   "name": "RFDoor_19",
+   "children": []
+  },
+  {
+   "name": "RFDoor_32",
+   "children": []
+  },
+  {
+   "name": "RFDoor_Men",
+   "children": [
+    205,
+    206
+   ]
+  },
+  {
+   "name": "RFDoor_27.001",
+   "children": []
+  },
+  {
+   "name": "RFDoor_29.001",
+   "children": []
+  },
+  {
+   "name": "Lynkco0726_FTires",
+   "children": [
+    208
+   ]
+  },
+  {
+   "name": "RootNode",
+   "children": [
+    209
+   ]
+  },
+  {
+   "name": "Lykco07",
+   "children": [
+    210
+   ]
+  },
+  {
+   "name": "FTires",
+   "children": [
+    211,
+    214
+   ]
+  },
+  {
+   "name": "F_SCP",
+   "children": [
+    212,
+    213
+   ]
+  },
+  {
+   "name": "FTires_04",
+   "children": []
+  },
+  {
+   "name": "FTires_06",
+   "children": []
+  },
+  {
+   "name": "F_Tires",
+   "children": [
+    215,
+    216,
+    217,
+    218
+   ]
+  },
+  {
+   "name": "FTires_07",
+   "children": []
+  },
+  {
+   "name": "FTires_10",
+   "children": []
+  },
+  {
+   "name": "FTires_05",
+   "children": []
+  },
+  {
+   "name": "FTires_V2",
+   "children": [
+    219,
+    220,
+    221
+   ]
+  },
+  {
+   "name": "FTires_01",
+   "children": []
+  },
+  {
+   "name": "FTires_20",
+   "children": []
+  },
+  {
+   "name": "FTires_12",
+   "children": []
+  },
+  {
+   "name": "Lynkco0726_BTires",
+   "children": [
+    223
+   ]
+  },
+  {
+   "name": "RootNode",
+   "children": [
+    224
+   ]
+  },
+  {
+   "name": "Lykco07",
+   "children": [
+    225
+   ]
+  },
+  {
+   "name": "RTires",
+   "children": [
+    226,
+    229
+   ]
+  },
+  {
+   "name": "R_SCP",
+   "children": [
+    227,
+    228
+   ]
+  },
+  {
+   "name": "BTires_04",
+   "children": []
+  },
+  {
+   "name": "BTires_06",
+   "children": []
+  },
+  {
+   "name": "R_Tires",
+   "children": [
+    230,
+    231,
+    232,
+    233
+   ]
+  },
+  {
+   "name": "BTires_07",
+   "children": []
+  },
+  {
+   "name": "BTires_10",
+   "children": []
+  },
+  {
+   "name": "BTires_05",
+   "children": []
+  },
+  {
+   "name": "BTires_V2",
+   "children": [
+    234,
+    235,
+    236
+   ]
+  },
+  {
+   "name": "BTires_01",
+   "children": []
+  },
+  {
+   "name": "BTires_20",
+   "children": []
+  },
+  {
+   "name": "BTires_12",
+   "children": []
+  },
+  {
+   "name": "Lynkco0726",
+   "children": [
+    0,
+    63,
+    94,
+    120,
+    140,
+    163,
+    184,
+    207,
+    222,
+    238
+   ]
+  },
+  {
+   "name": "Sunproof_main",
+   "children": [
+    47,
+    54
+   ]
+  }
+ ],
+ "materials": [
+  "Plastic_BK_06_EXT",
+  "Paint01",
+  "Piano_BK_06_EXT",
+  "Plastic_BK_02_EXT",
+  "Piano_BK_01_EXT",
+  "Piano_BK_02_EXT",
+  "Chrome_WE_01_EXT",
+  "Light_EXT",
+  "LGlass_WE_01_EXT",
+  "Plastic_BK_04_EXT",
+  "Plastic_BK_03_EXT",
+  "Piano_BK_04_EXT",
+  "Paint02",
+  "Glass_WW",
+  "Icon",
+  "redLight",
+  "Plastic_BK_07_EXT",
+  "Plastic_BK_09_EXT",
+  "Piano_BK_08_EXT",
+  "Rubber_INT",
+  "Glass_SR02",
+  "Plastic_BK_08_EXT",
+  "red02Light",
+  "License",
+  "Piano_BK_07_EXT",
+  "FUSHOUXIANG",
+  "Chrome_WE_INT",
+  "QIANZUO",
+  "HOUZUO",
+  "ZHONGKONG",
+  "FXP",
+  "DITAN",
+  "DITAN_LOGO",
+  "HOUBEIXIANG",
+  "HOUBEIXIANG1",
+  "Pinmu",
+  "MIrror_INT",
+  "QITA",
+  "Chrome_WE_01_INT",
+  "INT_light",
+  "Plastic_BK_05_EXT",
+  "Piano_BK_09_EXT",
+  "red_nolight",
+  "Piano_BK_03_EXT",
+  "Bdoor",
+  "Door_Light",
+  "Glass_SR",
+  "FLdoor",
+  "Mirror",
+  "FRdoor",
+  "Plastic_BK_EXT",
+  "BrakeC_F",
+  "BrakeD",
+  "Tire",
+  "Rim_03_BK",
+  "Rim_03_WE"
+ ],
+ "textures": [
+  "DS11A1_AO_04.jpg",
+  "DS11_EXT_AO.png",
+  "DS11A1_License.jpg",
+  "FSXShape.png",
+  "FseatShape.png",
+  "houzuoShape.png",
+  "zhongkongShape.png",
+  "FXP1Shape.png",
+  "DITAN1Shape.png",
+  "Trunk_INT_01Shape.png",
+  "HOUBEIXIANG1_AO.png",
+  "DS11_PINGMU.jpg",
+  "QitaShape.png",
+  "yuan.jpg",
+  "LBDoor_INT_01Shape.png",
+  "LFDoor.png",
+  "RFDoor_INT_02Shape.png",
+  "DS11_lunghu_AO.png",
+  "DS11_Tires.jpg",
+  "DS11_luntai_AO.png",
+  "DS11_luntai_N.jpg",
+  "DS11_Tires_V2_AO.png"
+ ],
+ "prims": [
+  {
+   "mat": 0,
+   "node": 5
+  },
+  {
+   "mat": 1,
+   "node": 6
+  },
+  {
+   "mat": 0,
+   "node": 7
+  },
+  {
+   "mat": 1,
+   "node": 9
+  },
+  {
+   "mat": 0,
+   "node": 10
+  },
+  {
+   "mat": 0,
+   "node": 11
+  },
+  {
+   "mat": 1,
+   "node": 13
+  },
+  {
+   "mat": 2,
+   "node": 14
+  },
+  {
+   "mat": 0,
+   "node": 15
+  },
+  {
+   "mat": 0,
+   "node": 16
+  },
+  {
+   "mat": 3,
+   "node": 17
+  },
+  {
+   "mat": 4,
+   "node": 18
+  },
+  {
+   "mat": 1,
+   "node": 19
+  },
+  {
+   "mat": 3,
+   "node": 20
+  },
+  {
+   "mat": 5,
+   "node": 21
+  },
+  {
+   "mat": 6,
+   "node": 22
+  },
+  {
+   "mat": 7,
+   "node": 23
+  },
+  {
+   "mat": 8,
+   "node": 24
+  },
+  {
+   "mat": 8,
+   "node": 25
+  },
+  {
+   "mat": 9,
+   "node": 26
+  },
+  {
+   "mat": 10,
+   "node": 27
+  },
+  {
+   "mat": 9,
+   "node": 28
+  },
+  {
+   "mat": 7,
+   "node": 29
+  },
+  {
+   "mat": 10,
+   "node": 30
+  },
+  {
+   "mat": 9,
+   "node": 31
+  },
+  {
+   "mat": 9,
+   "node": 32
+  },
+  {
+   "mat": 11,
+   "node": 33
+  },
+  {
+   "mat": 12,
+   "node": 34
+  },
+  {
+   "mat": 13,
+   "node": 35
+  },
+  {
+   "mat": 14,
+   "node": 36
+  },
+  {
+   "mat": 15,
+   "node": 37
+  },
+  {
+   "mat": 10,
+   "node": 38
+  },
+  {
+   "mat": 10,
+   "node": 39
+  },
+  {
+   "mat": 13,
+   "node": 40
+  },
+  {
+   "mat": 0,
+   "node": 41
+  },
+  {
+   "mat": 0,
+   "node": 42
+  },
+  {
+   "mat": 16,
+   "node": 43
+  },
+  {
+   "mat": 1,
+   "node": 44
+  },
+  {
+   "mat": 17,
+   "node": 45
+  },
+  {
+   "mat": 18,
+   "node": 46
+  },
+  {
+   "mat": 3,
+   "node": 47
+  },
+  {
+   "mat": 9,
+   "node": 48
+  },
+  {
+   "mat": 18,
+   "node": 49
+  },
+  {
+   "mat": 19,
+   "node": 50
+  },
+  {
+   "mat": 1,
+   "node": 51
+  },
+  {
+   "mat": 19,
+   "node": 52
+  },
+  {
+   "mat": 18,
+   "node": 53
+  },
+  {
+   "mat": 20,
+   "node": 54
+  },
+  {
+   "mat": 8,
+   "node": 55
+  },
+  {
+   "mat": 21,
+   "node": 56
+  },
+  {
+   "mat": 22,
+   "node": 57
+  },
+  {
+   "mat": 23,
+   "node": 58
+  },
+  {
+   "mat": 24,
+   "node": 59
+  },
+  {
+   "mat": 22,
+   "node": 60
+  },
+  {
+   "mat": 1,
+   "node": 61
+  },
+  {
+   "mat": 0,
+   "node": 62
+  },
+  {
+   "mat": 25,
+   "node": 68
+  },
+  {
+   "mat": 26,
+   "node": 69
+  },
+  {
+   "mat": 17,
+   "node": 70
+  },
+  {
+   "mat": 26,
+   "node": 71
+  },
+  {
+   "mat": 27,
+   "node": 73
+  },
+  {
+   "mat": 28,
+   "node": 74
+  },
+  {
+   "mat": 29,
+   "node": 76
+  },
+  {
+   "mat": 30,
+   "node": 78
+  },
+  {
+   "mat": 31,
+   "node": 80
+  },
+  {
+   "mat": 32,
+   "node": 81
+  },
+  {
+   "mat": 33,
+   "node": 83
+  },
+  {
+   "mat": 34,
+   "node": 84
+  },
+  {
+   "mat": 35,
+   "node": 86
+  },
+  {
+   "mat": 36,
+   "node": 88
+  },
+  {
+   "mat": 37,
+   "node": 89
+  },
+  {
+   "mat": 38,
+   "node": 90
+  },
+  {
+   "mat": 9,
+   "node": 91
+  },
+  {
+   "mat": 19,
+   "node": 92
+  },
+  {
+   "mat": 39,
+   "node": 93
+  },
+  {
+   "mat": 33,
+   "node": 99
+  },
+  {
+   "mat": 33,
+   "node": 100
+  },
+  {
+   "mat": 33,
+   "node": 101
+  },
+  {
+   "mat": 9,
+   "node": 103
+  },
+  {
+   "mat": 10,
+   "node": 104
+  },
+  {
+   "mat": 1,
+   "node": 105
+  },
+  {
+   "mat": 1,
+   "node": 106
+  },
+  {
+   "mat": 40,
+   "node": 107
+  },
+  {
+   "mat": 15,
+   "node": 108
+  },
+  {
+   "mat": 3,
+   "node": 109
+  },
+  {
+   "mat": 7,
+   "node": 110
+  },
+  {
+   "mat": 8,
+   "node": 111
+  },
+  {
+   "mat": 7,
+   "node": 112
+  },
+  {
+   "mat": 6,
+   "node": 113
+  },
+  {
+   "mat": 41,
+   "node": 114
+  },
+  {
+   "mat": 23,
+   "node": 115
+  },
+  {
+   "mat": 42,
+   "node": 116
+  },
+  {
+   "mat": 43,
+   "node": 117
+  },
+  {
+   "mat": 42,
+   "node": 118
+  },
+  {
+   "mat": 14,
+   "node": 119
+  },
+  {
+   "mat": 44,
+   "node": 125
+  },
+  {
+   "mat": 19,
+   "node": 126
+  },
+  {
+   "mat": 45,
+   "node": 127
+  },
+  {
+   "mat": 0,
+   "node": 129
+  },
+  {
+   "mat": 10,
+   "node": 130
+  },
+  {
+   "mat": 1,
+   "node": 131
+  },
+  {
+   "mat": 46,
+   "node": 132
+  },
+  {
+   "mat": 6,
+   "node": 133
+  },
+  {
+   "mat": 0,
+   "node": 134
+  },
+  {
+   "mat": 0,
+   "node": 135
+  },
+  {
+   "mat": 10,
+   "node": 136
+  },
+  {
+   "mat": 0,
+   "node": 138
+  },
+  {
+   "mat": 1,
+   "node": 139
+  },
+  {
+   "mat": 47,
+   "node": 145
+  },
+  {
+   "mat": 19,
+   "node": 146
+  },
+  {
+   "mat": 45,
+   "node": 147
+  },
+  {
+   "mat": 4,
+   "node": 149
+  },
+  {
+   "mat": 1,
+   "node": 150
+  },
+  {
+   "mat": 10,
+   "node": 151
+  },
+  {
+   "mat": 13,
+   "node": 152
+  },
+  {
+   "mat": 6,
+   "node": 153
+  },
+  {
+   "mat": 48,
+   "node": 154
+  },
+  {
+   "mat": 0,
+   "node": 155
+  },
+  {
+   "mat": 10,
+   "node": 156
+  },
+  {
+   "mat": 0,
+   "node": 157
+  },
+  {
+   "mat": 0,
+   "node": 158
+  },
+  {
+   "mat": 12,
+   "node": 159
+  },
+  {
+   "mat": 0,
+   "node": 161
+  },
+  {
+   "mat": 1,
+   "node": 162
+  },
+  {
+   "mat": 44,
+   "node": 168
+  },
+  {
+   "mat": 19,
+   "node": 169
+  },
+  {
+   "mat": 45,
+   "node": 170
+  },
+  {
+   "mat": 10,
+   "node": 172
+  },
+  {
+   "mat": 1,
+   "node": 173
+  },
+  {
+   "mat": 10,
+   "node": 174
+  },
+  {
+   "mat": 1,
+   "node": 175
+  },
+  {
+   "mat": 46,
+   "node": 176
+  },
+  {
+   "mat": 0,
+   "node": 177
+  },
+  {
+   "mat": 6,
+   "node": 178
+  },
+  {
+   "mat": 0,
+   "node": 179
+  },
+  {
+   "mat": 10,
+   "node": 180
+  },
+  {
+   "mat": 0,
+   "node": 182
+  },
+  {
+   "mat": 1,
+   "node": 183
+  },
+  {
+   "mat": 49,
+   "node": 189
+  },
+  {
+   "mat": 19,
+   "node": 190
+  },
+  {
+   "mat": 45,
+   "node": 191
+  },
+  {
+   "mat": 0,
+   "node": 193
+  },
+  {
+   "mat": 1,
+   "node": 194
+  },
+  {
+   "mat": 0,
+   "node": 195
+  },
+  {
+   "mat": 10,
+   "node": 196
+  },
+  {
+   "mat": 13,
+   "node": 197
+  },
+  {
+   "mat": 6,
+   "node": 198
+  },
+  {
+   "mat": 10,
+   "node": 199
+  },
+  {
+   "mat": 0,
+   "node": 200
+  },
+  {
+   "mat": 48,
+   "node": 201
+  },
+  {
+   "mat": 4,
+   "node": 202
+  },
+  {
+   "mat": 12,
+   "node": 203
+  },
+  {
+   "mat": 1,
+   "node": 205
+  },
+  {
+   "mat": 0,
+   "node": 206
+  },
+  {
+   "mat": 50,
+   "node": 212
+  },
+  {
+   "mat": 51,
+   "node": 213
+  },
+  {
+   "mat": 52,
+   "node": 215
+  },
+  {
+   "mat": 53,
+   "node": 216
+  },
+  {
+   "mat": 50,
+   "node": 217
+  },
+  {
+   "mat": 54,
+   "node": 219
+  },
+  {
+   "mat": 55,
+   "node": 220
+  },
+  {
+   "mat": 55,
+   "node": 221
+  },
+  {
+   "mat": 50,
+   "node": 227
+  },
+  {
+   "mat": 51,
+   "node": 228
+  },
+  {
+   "mat": 52,
+   "node": 230
+  },
+  {
+   "mat": 53,
+   "node": 231
+  },
+  {
+   "mat": 50,
+   "node": 232
+  },
+  {
+   "mat": 54,
+   "node": 234
+  },
+  {
+   "mat": 55,
+   "node": 235
+  },
+  {
+   "mat": 55,
+   "node": 236
+  }
+ ],
+ "rotated": true,
+ "parts": [
+  {
+   "name": "Trunk",
+   "node": 97,
+   "kind": "trunk",
+   "hinge": [
+    -1.9292,
+    0.9531,
+    -0.0
+   ],
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "sign": 1.0,
+   "maxAngle": 0.78
+  },
+  {
+   "name": "LBDoor",
+   "node": 123,
+   "kind": "door",
+   "hinge": [
+    -0.9904,
+    0.8227,
+    -0.6211
+   ],
+   "axis": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "sign": 1.0,
+   "maxAngle": 1.0
+  },
+  {
+   "name": "LFDoor",
+   "node": 143,
+   "kind": "door",
+   "hinge": [
+    0.7476,
+    0.8179,
+    -0.6648
+   ],
+   "axis": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "sign": -1.0,
+   "maxAngle": 1.0
+  },
+  {
+   "name": "RBDoor",
+   "node": 166,
+   "kind": "door",
+   "hinge": [
+    -0.9904,
+    0.8227,
+    0.6211
+   ],
+   "axis": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "sign": -1.0,
+   "maxAngle": 1.0
+  },
+  {
+   "name": "RFDoor",
+   "node": 187,
+   "kind": "door",
+   "hinge": [
+    0.7476,
+    0.8179,
+    0.6648
+   ],
+   "axis": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "sign": 1.0,
+   "maxAngle": 1.0
+  },
+  {
+   "name": "Sunproof_main",
+   "node": 238,
+   "kind": "sunroof",
+   "hinge": [
+    -1.0299,
+    1.2334,
+    0.0
+   ],
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "sign": -1.0,
+   "maxAngle": 0.35
+  }
+ ],
+ "axes": {
+  "rearX": -1.848,
+  "frontX": 1.87
+ },
+ "bounds": {
+  "min": [
+   -1.9650560257388048,
+   0.0025518706665039192,
+   -0.8257170104980469
+  ],
+  "max": [
+   1.8704623587140023,
+   1.2334388732910158,
+   0.8257171630859376
+  ]
+ }
+}

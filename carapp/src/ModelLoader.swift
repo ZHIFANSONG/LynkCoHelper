@@ -694,9 +694,8 @@ final class CarSceneView: SCNView {
         carRoot.addChildNode(built.0)
         pivots = built.1
         // 车停到路面：模型最低点贴到 groundY（路面在 y=0）
-        if let b = model?.bounds {
-            carRoot.position = SCNVector3(0, -b.min.y, 0)
-        }
+        let b = model.bounds
+        carRoot.position = SCNVector3(0, -b.min.y, 0)
         frameCamera()
     }
 

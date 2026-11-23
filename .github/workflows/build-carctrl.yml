@@ -1,0 +1,76 @@
+name: Build CarCtrl IPA
+
+on:
+  push:
+    paths:
+      - "carapp/**"
+      - ".github/workflows/build-carctrl.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify Xcode
+        run: |
+          xcodebuild -version
+          xcrun --find swiftc
+
+      - name: Build unsigned IPA
+        working-directory: carapp
+        run: |
+          set -euo pipefail
+          # build.sh 原为黑苹果 theos 环境写的；Actions 的 macos-15 自带完整 Xcode，
+          # SDK 路径与 swiftc 位置都不同，这里内联等价逻辑。
+          SDK=$(xcrun --sdk iphoneos --show-sdk-path)
+          echo "SDK=$SDK"
+          SWIFT=/usr/bin/swiftc
+          [ -x "$SWIFT" ] || SWIFT=$(xcrun --find swiftc)
+          SRC=src
+          APP=build/Payload/CarCtrl.app
+          rm -rf build out
+          mkdir -p "$APP"
+
+          $SWIFT -sdk "$SDK" \
+            -target arm64-apple-ios16.0 \
+            -O -module-name CarCtrl \
+            -emit-executable \
+            -o "$APP/CarCtrl" \
+            -framework SwiftUI -framework UIKit -framework SceneKit \
+            -framework CoreGraphics -framework MapKit -framework CoreLocation \
+            -framework Foundation \
+            "$SRC"/Api.swift "$SRC"/AppMain.swift "$SRC"/ContentView.swift \
+            "$SRC"/Crypto.swift "$SRC"/Design.swift "$SRC"/ModelLoader.swift \
+            "$SRC"/EnergyView.swift "$SRC"/FindCarView.swift "$SRC"/SettingsView.swift \
+            "$SRC"/Models.swift
+
+          # 资源
+          cp src/Info.plist "$APP"/
+          printf 'APPL????' > "$APP"/PkgInfo
+          cp res/cardata.bin "$APP"/
+          cp res/carparts.json "$APP"/
+          cp res/AppIcon.png "$APP"/ 2>/dev/null || true
+          if [ -d res/icons ]; then cp res/icons/*.png "$APP"/; fi
+          if [ -d res/cartex ]; then
+            mkdir -p "$APP/cartex"
+            cp res/cartex/* "$APP/cartex/"
+          fi
+
+          # 不签名（用户自己签），打 IPA
+          mkdir -p out
+          cd build
+          zip -qry ../out/CarCtrl-unsigned.ipa Payload
+          cd ..
+          ls -la out/
+          shasum -a 256 out/CarCtrl-unsigned.ipa
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CarCtrl-unsigned-ipa
+          path: carapp/out/CarCtrl-unsigned.ipa
+          retention-days: 30

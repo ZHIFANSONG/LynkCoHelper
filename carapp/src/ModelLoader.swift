@@ -257,13 +257,17 @@ final class CarModel {
         // 非金属件压低镜面强度，避免塑料反光
         mat.specular.contents = UIColor(white: CGFloat(0.25 + 0.5 * st.metallic), alpha: 1)
 
-        // ---- 车漆的 AO 图：走 ambientOcclusion 槽（★ 绝不乘到 diffuse 上）
-        //   原图均值只有 0.394、41% 像素 < 0.3，直接用会把车漆压成脏灰；
-        //   改用提亮版 paint_ao_lift（暗部抬到 0.62，保留明暗层次）。
+        // ★ 车漆质感：官方 roughness 0.45 是给"无光照+纯 env"渲染管线的值，
+        //   在 SceneKit PBR 下等同磨砂。真车漆清漆层 ≈ 0.22，高光才会拉出长条。
         if st.isPaint {
-            mat.ambientOcclusion.contents =
-                CarModel.paintAO() ?? texture(st.texBase)
+            mat.roughness.contents = 0.22
+            mat.specular.contents = UIColor(white: 0.92, alpha: 1)
         }
+
+        // ---- 车漆 AO：★ 2026-11-23 移除。paint_ao_lift 是整 UV 图集的烘焙图，
+        //   车漆 UV 有 12.8% 越界（v<0），.repeat 平铺会绕回图集顶部 —— 车门上
+        //   出现波纹状斑块的元凶。参考图的车漆是纯净光滑的，直接不要 AO。
+
 
         if let em = texture(st.texEmissive) {
             mat.emission.contents = em
@@ -390,9 +394,9 @@ final class CarSceneView: SCNView {
     // 相机轨道参数
     private var target = SIMD3<Float>(0, 0.5, 0)
     private var radius: Float = 6
-    private var yaw: Float = 0.62          // 弧度，0 = 正前方(+Z)
-    private var pitch: Float = 0.20
-    private var yaw0: Float = 0.62
+    private var yaw: Float = 2.52          // 前 3/4、车头朝画面左（sin=0.585, cos=-0.811，同参考图构图）
+    private var pitch: Float = 0.20        // 略高于引擎盖的平视
+    private var yaw0: Float = 2.52
     private var pitch0: Float = 0.20
     private var radius0: Float = 6
     private var extent: Float = 4
@@ -512,52 +516,33 @@ final class CarSceneView: SCNView {
         // ---- 远山：两层起伏剪影（程序生成山脊线 mesh） ----
         addMountains(scene, groundY: groundY)
 
-        // ---- 路面：深灰长条（沿 X 轴延伸），车停路面上 ----
-        let road = SCNBox(width: 60, height: 0.04, length: 14, chamferRadius: 0)
-        let roadMat = SCNMaterial()
-        roadMat.diffuse.contents = UIColor(red: 0.145, green: 0.15, blue: 0.165, alpha: 1)
-        roadMat.roughness.contents = 0.55
-        roadMat.metalness.contents = 0.0
-        roadMat.specular.contents = UIColor(white: 0.18, alpha: 1)
-        road.materials = [roadMat]
-        let roadN = SCNNode(geometry: road)
-        roadN.position = SCNVector3(0, groundY - 0.02, 0)
-        scene.rootNode.addChildNode(roadN)
-        roadNode = roadN
+        // ---- 地台：光滑反光地面（参考图是镜面水感，不是沥青路）
+        //   低粗糙度 PBR + lightingEnvironment 反射 → 地面映出晚霞暖带
+        let floorGeo = SCNPlane(width: 320, height: 320)
+        let floorMat = SCNMaterial()
+        floorMat.lightingModel = .physicallyBased
+        floorMat.diffuse.contents = UIColor(red: 0.052, green: 0.050, blue: 0.062, alpha: 1)
+        floorMat.metalness.contents = 0.0
+        floorMat.roughness.contents = 0.24
+        floorMat.specular.contents = UIColor(white: 0.9, alpha: 1)
+        floorGeo.materials = [floorMat]
+        let floorN = SCNNode(geometry: floorGeo)
+        floorN.eulerAngles.x = -.pi / 2
+        floorN.position = SCNVector3(0, groundY, 0)
+        scene.rootNode.addChildNode(floorN)
+        groundNode = floorN
 
-        // 车道分隔线（中央虚线）
-        let dashMat = SCNMaterial()
-        dashMat.diffuse.contents = UIColor(red: 0.85, green: 0.78, blue: 0.45, alpha: 1)
-        dashMat.emission.contents = UIColor(red: 0.5, green: 0.42, blue: 0.18, alpha: 1)
-        dashMat.emission.intensity = 0.25
-        dashMat.lightingModel = .constant
-        for i in 0..<14 {
-            let dash = SCNBox(width: 1.4, height: 0.012, length: 0.14, chamferRadius: 0)
-            dash.materials = [dashMat]
-            let d = SCNNode(geometry: dash)
-            d.position = SCNVector3(Float(i) * 4.2 - 27.3, groundY + 0.005, 0)
-            scene.rootNode.addChildNode(d)
-        }
-
-        // 路肩线（两侧实线）
-        let edgeMat = SCNMaterial()
-        edgeMat.diffuse.contents = UIColor(white: 0.72, alpha: 1)
-        edgeMat.lightingModel = .constant
-        edgeMat.emission.contents = UIColor(white: 0.35, alpha: 1)
-        edgeMat.emission.intensity = 0.2
-        for z in [Float](arrayLiteral: -6.6, 6.6) {
-            let edge = SCNBox(width: 60, height: 0.012, length: 0.12, chamferRadius: 0)
-            edge.materials = [edgeMat]
-            let e = SCNNode(geometry: edge)
-            e.position = SCNVector3(0, groundY + 0.004, z)
-            scene.rootNode.addChildNode(e)
-        }
+        // ---- 雾：远山与地平线融进晚霞（参考图的空气感） ----
+        scene.fogColor = UIColor(red: 0.86, green: 0.66, blue: 0.56, alpha: 1)
+        scene.fogStartDistance = 42
+        scene.fogEndDistance = 150
+        scene.fogDensityExponent = 1.2
 
         // ---- 灯光：黄昏太阳 = 暖色低角度直射光 ----
         let ambient = SCNLight()
         ambient.type = .ambient
         ambient.color = UIColor(red: 1.0, green: 0.80, blue: 0.62, alpha: 1)  // 暖霞环境光
-        ambient.intensity = 210
+        ambient.intensity = 240
         let aNode = SCNNode()
         aNode.light = ambient
         scene.rootNode.addChildNode(aNode)
@@ -565,7 +550,7 @@ final class CarSceneView: SCNView {
         let sun = SCNLight()
         sun.type = .directional
         sun.color = UIColor(red: 1.0, green: 0.72, blue: 0.50, alpha: 1)     // 落日暖橙
-        sun.intensity = 430                                                   // ★ 压低：原 700 直射把漆面打爆
+        sun.intensity = 520                                                   // 暖色主光，压过高光不压亮度
         sun.castsShadow = true
         sun.shadowMode = .deferred
         sun.shadowRadius = 6
@@ -574,7 +559,7 @@ final class CarSceneView: SCNView {
         sun.orthographicScale = 14
         let sNode = SCNNode()
         sNode.light = sun
-        sNode.position = SCNVector3(28, 7, 9)     // 低角度：落日刚过山顶
+        sNode.position = SCNVector3(24, 12, 13)     // 低角度暖光（黄昏太阳）
         sNode.look(at: SCNVector3Zero, up: SCNVector3(0, 1, 0), localFront: SCNVector3(0, 0, -1))
         scene.rootNode.addChildNode(sNode)
 
@@ -604,7 +589,7 @@ final class CarSceneView: SCNView {
         }
         if let envImg = CarSceneView.tex(envName) {
             scene.lightingEnvironment.contents = envImg
-            scene.lightingEnvironment.intensity = day ? 1.15 : 1.35
+            scene.lightingEnvironment.intensity = day ? 1.7 : 2.1   // ★ 提亮反射：漆面光泽靠它
         } else if let cube = CarSceneView.loadEnvCube() {
             scene.lightingEnvironment.contents = cube
             scene.lightingEnvironment.intensity = 1.0
@@ -660,10 +645,10 @@ final class CarSceneView: SCNView {
             scene.rootNode.addChildNode(n)
         }
         // 远层：蓝紫剪影；近层：暖深色
-        ridgeLayer(baseZ: -52, height: 4.5,
+        ridgeLayer(baseZ: -62, height: 3.4,
                    color: UIColor(red: 0.30, green: 0.24, blue: 0.42, alpha: 1.0),
                    seed: 1.7)
-        ridgeLayer(baseZ: -38, height: 3.0,
+        ridgeLayer(baseZ: -48, height: 2.2,
                    color: UIColor(red: 0.34, green: 0.26, blue: 0.32, alpha: 1.0),
                    seed: 4.2)
     }
@@ -707,10 +692,10 @@ final class CarSceneView: SCNView {
                                   (b.min.z + b.max.z) / 2)
         extent = max(b.max.x - b.min.x, max(b.max.y - b.min.y, b.max.z - b.min.z))
         target = SIMD3<Float>(center.x, center.y + extent * 0.05, center.z)
-        radius = extent * 1.30
+        radius = extent * 1.42          // 车占画面约 3/4 宽（参考图比例）
         radius0 = radius
-        yaw = 0.62
-        pitch = 0.19
+        yaw = 2.52                      // 前 3/4，车头朝画面左
+        pitch = 0.20
         yaw0 = yaw
         pitch0 = pitch
         applyCamera(animated: false)

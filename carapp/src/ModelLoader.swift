@@ -431,69 +431,20 @@ final class CarSceneView: SCNView {
         cam.zNear = 0.02
         cam.zFar = 300
         cam.wantsHDR = true
-        cam.bloomIntensity = 0.28
-        cam.bloomThreshold = 0.90
-        cam.bloomBlurRadius = 12
-        cam.vignettingIntensity = 0.22
-        cam.vignettingPower = 1.9
-        cam.saturation = 1.06
-        cam.contrast = 0.06
+        // ★ 光晕根因：bloom 阈值 0.9 太低、强度 0.28 太高 —— 漆面高光全被晕开。
+        //   提高阈值到 1.35（只有太阳/灯珠超过），强度压半。
+        cam.bloomIntensity = 0.14
+        cam.bloomThreshold = 1.35
+        cam.bloomBlurRadius = 8
+        cam.vignettingIntensity = 0.18
+        cam.vignettingPower = 1.8
+        cam.saturation = 1.04
+        cam.contrast = 0.04
         cameraNode.camera = cam
         scene.rootNode.addChildNode(cameraNode)
 
-        // 直射光压低：展厅质感来自环境反射，直射光多了就变塑料
-        let ambient = SCNLight()
-        ambient.type = .ambient
-        ambient.color = UIColor(white: 1, alpha: 1)
-        ambient.intensity = 150
-        let aNode = SCNNode()
-        aNode.light = ambient
-        scene.rootNode.addChildNode(aNode)
-
-        let key = SCNLight()
-        key.type = .directional
-        key.color = UIColor(red: 1.0, green: 0.98, blue: 0.95, alpha: 1)
-        key.intensity = 700
-        key.castsShadow = true
-        key.shadowMode = .deferred
-        key.shadowRadius = 5
-        key.shadowColor = UIColor.black.withAlphaComponent(0.55)
-        key.shadowMapSize = CGSize(width: 2048, height: 2048)
-        key.orthographicScale = 9
-        let kNode = SCNNode()
-        kNode.light = key
-        kNode.position = SCNVector3(5, 9, 5)
-        kNode.look(at: SCNVector3Zero, up: SCNVector3(0, 1, 0), localFront: SCNVector3(0, 0, -1))
-        scene.rootNode.addChildNode(kNode)
-
-        let rim = SCNLight()
-        rim.type = .directional
-        rim.color = UIColor(red: 0.62, green: 0.76, blue: 1.0, alpha: 1)
-        rim.intensity = 520
-        let rNode = SCNNode()
-        rNode.light = rim
-        rNode.position = SCNVector3(-7, 4, -8)
-        rNode.look(at: SCNVector3Zero, up: SCNVector3(0, 1, 0), localFront: SCNVector3(0, 0, -1))
-        scene.rootNode.addChildNode(rNode)
-
-        let fill = SCNLight()
-        fill.type = .directional
-        fill.color = UIColor(white: 0.9, alpha: 1)
-        fill.intensity = 140
-        let fNode = SCNNode()
-        fNode.light = fill
-        fNode.position = SCNVector3(0, -3, 5)
-        fNode.look(at: SCNVector3Zero, up: SCNVector3(0, 1, 0), localFront: SCNVector3(0, 0, -1))
-        scene.rootNode.addChildNode(fNode)
-
-        if let env = CarSceneView.loadEnvCube() {
-            scene.lightingEnvironment.contents = env
-            scene.lightingEnvironment.intensity = 1.7
-        } else {
-            scene.lightingEnvironment.contents = CarSceneView.makeEnvMap()
-            scene.lightingEnvironment.intensity = 1.1
-        }
         self.scene = scene
+        buildDuskRoadScene(scene)
 
         // 手势：单指拖动转视角，双指捏合缩放
         let pan = UIPanGestureRecognizer(target: self, action: #selector(onPan(_:)))
@@ -514,6 +465,207 @@ final class CarSceneView: SCNView {
             imgs.append(img)
         }
         return imgs
+    }
+
+    // MARK: 黄昏公路场景
+
+    /// 当前外观模式（ ContentView 在 onAppear 时设置，影响天空/环境用哪套贴图）
+    var sceneDayMode = false {
+        didSet {
+            guard sceneDayMode != oldValue else { return }
+            applySceneTheme()
+        }
+    }
+    private var skyNode: SCNNode?
+    private var groundNode: SCNNode?
+    private var roadNode: SCNNode?
+
+    private static func tex(_ name: String) -> UIImage? {
+        guard let u = Bundle.main.url(forResource: name, withExtension: "png", subdirectory: "cartex")
+                ?? Bundle.main.url(forResource: name, withExtension: "png"),
+              let img = UIImage(contentsOfFile: u.path) else { return nil }
+        return img
+    }
+
+    private func buildDuskRoadScene(_ scene: SCNScene) {
+        let groundY: Float = 0            // 路面高度（车停在路面上）
+
+        // ---- 天空穹顶：大球内侧贴 sky 图 ----
+        let sky = SCNSphere(radius: 120)
+        sky.firstMaterial?.isDoubleSided = false
+        sky.firstMaterial?.cullMode = .front        // 只渲染内侧
+        let skyMat = SCNMaterial()
+        skyMat.diffuse.contents = CarSceneView.tex("sky_dusk")
+        skyMat.emission.contents = CarSceneView.tex("sky_dusk")
+        skyMat.emission.intensity = 1.0
+        skyMat.lightingModel = .constant           // 天空不受光，直接出图
+        skyMat.isDoubleSided = false
+        skyMat.cullMode = .front
+        sky.materials = [skyMat]
+        let skyN = SCNNode(geometry: sky)
+        skyN.position = SCNVector3(0, 0, 0)
+        // 让天空图的竖直中心线对准地平线：贴图 v=0.5 处是地平线
+        skyN.eulerAngles = SCNVector3(0, 0, 0)
+        scene.rootNode.addChildNode(skyN)
+        skyNode = skyN
+
+        // ---- 远山：两层起伏剪影（程序生成山脊线 mesh） ----
+        addMountains(scene, groundY: groundY)
+
+        // ---- 路面：深灰长条（沿 X 轴延伸），车停路面上 ----
+        let road = SCNBox(width: 60, height: 0.04, length: 14, chamferRadius: 0)
+        let roadMat = SCNMaterial()
+        roadMat.diffuse.contents = UIColor(red: 0.145, green: 0.15, blue: 0.165, alpha: 1)
+        roadMat.roughness.contents = 0.55
+        roadMat.metalness.contents = 0.0
+        roadMat.specular.contents = UIColor(white: 0.18, alpha: 1)
+        road.materials = [roadMat]
+        let roadN = SCNNode(geometry: road)
+        roadN.position = SCNVector3(0, groundY - 0.02, 0)
+        scene.rootNode.addChildNode(roadN)
+        roadNode = roadN
+
+        // 车道分隔线（中央虚线）
+        let dashMat = SCNMaterial()
+        dashMat.diffuse.contents = UIColor(red: 0.85, green: 0.78, blue: 0.45, alpha: 1)
+        dashMat.emission.contents = UIColor(red: 0.5, green: 0.42, blue: 0.18, alpha: 1)
+        dashMat.emission.intensity = 0.25
+        dashMat.lightingModel = .constant
+        for i in 0..<14 {
+            let dash = SCNBox(width: 1.4, height: 0.012, length: 0.14, chamferRadius: 0)
+            dash.materials = [dashMat]
+            let d = SCNNode(geometry: dash)
+            d.position = SCNVector3(Float(i) * 4.2 - 27.3, groundY + 0.005, 0)
+            scene.rootNode.addChildNode(d)
+        }
+
+        // 路肩线（两侧实线）
+        let edgeMat = SCNMaterial()
+        edgeMat.diffuse.contents = UIColor(white: 0.72, alpha: 1)
+        edgeMat.lightingModel = .constant
+        edgeMat.emission.contents = UIColor(white: 0.35, alpha: 1)
+        edgeMat.emission.intensity = 0.2
+        for z in [Float](arrayLiteral: -6.6, 6.6) {
+            let edge = SCNBox(width: 60, height: 0.012, length: 0.12, chamferRadius: 0)
+            edge.materials = [edgeMat]
+            let e = SCNNode(geometry: edge)
+            e.position = SCNVector3(0, groundY + 0.004, z)
+            scene.rootNode.addChildNode(e)
+        }
+
+        // ---- 灯光：黄昏太阳 = 暖色低角度直射光 ----
+        let ambient = SCNLight()
+        ambient.type = .ambient
+        ambient.color = UIColor(red: 1.0, green: 0.80, blue: 0.62, alpha: 1)  // 暖霞环境光
+        ambient.intensity = 210
+        let aNode = SCNNode()
+        aNode.light = ambient
+        scene.rootNode.addChildNode(aNode)
+
+        let sun = SCNLight()
+        sun.type = .directional
+        sun.color = UIColor(red: 1.0, green: 0.72, blue: 0.50, alpha: 1)     // 落日暖橙
+        sun.intensity = 430                                                   // ★ 压低：原 700 直射把漆面打爆
+        sun.castsShadow = true
+        sun.shadowMode = .deferred
+        sun.shadowRadius = 6
+        sun.shadowColor = UIColor.black.withAlphaComponent(0.45)
+        sun.shadowMapSize = CGSize(width: 2048, height: 2048)
+        sun.orthographicScale = 14
+        let sNode = SCNNode()
+        sNode.light = sun
+        sNode.position = SCNVector3(28, 7, 9)     // 低角度：落日刚过山顶
+        sNode.look(at: SCNVector3Zero, up: SCNVector3(0, 1, 0), localFront: SCNVector3(0, 0, -1))
+        scene.rootNode.addChildNode(sNode)
+
+        // 天空侧的冷色补光（黄昏反差）
+        let skyFill = SCNLight()
+        skyFill.type = .directional
+        skyFill.color = UIColor(red: 0.45, green: 0.50, blue: 0.72, alpha: 1)
+        skyFill.intensity = 260
+        let sfNode = SCNNode()
+        sfNode.light = skyFill
+        sfNode.position = SCNVector3(-20, 10, -14)
+        sfNode.look(at: SCNVector3Zero, up: SCNVector3(0, 1, 0), localFront: SCNVector3(0, 0, -1))
+        scene.rootNode.addChildNode(sfNode)
+
+        // ---- 环境反射：换黄昏 env（车漆反射里是晚霞而不是白棚灯） ----
+        applySceneTheme()
+    }
+
+    private func applySceneTheme() {
+        guard let scene = self.scene else { return }
+        let day = sceneDayMode
+        let skyName = day ? "sky_day" : "sky_dusk"
+        let envName = day ? "env_day" : "env_dusk"
+        if let skyImg = CarSceneView.tex(skyName) {
+            skyNode?.geometry?.firstMaterial?.diffuse.contents = skyImg
+            skyNode?.geometry?.firstMaterial?.emission.contents = skyImg
+        }
+        if let envImg = CarSceneView.tex(envName) {
+            scene.lightingEnvironment.contents = envImg
+            scene.lightingEnvironment.intensity = day ? 1.15 : 1.35
+        } else if let cube = CarSceneView.loadEnvCube() {
+            scene.lightingEnvironment.contents = cube
+            scene.lightingEnvironment.intensity = 1.0
+        } else {
+            scene.lightingEnvironment.contents = CarSceneView.makeEnvMap()
+            scene.lightingEnvironment.intensity = 0.9
+        }
+    }
+
+    /// 两层远山剪影：程序生成的起伏山脊
+    private func addMountains(_ scene: SCNScene, groundY: Float) {
+        func ridgeLayer(baseZ: Float, height: Float, color: UIColor, seed: Float, width: Float = 180) {
+            // 生成山脊顶点（正弦叠加做起伏）
+            var xs: [Float] = []
+            var hs: [Float] = []
+            let seg = 64
+            for i in 0...seg {
+                let x = -width / 2 + Float(i) / Float(seg) * width
+                let t = Float(i) / Float(seg)
+                // 多频正弦叠加 + 尖峰
+                var h = height * (
+                    0.45 * sin(t * Float.pi * 4.0 + seed)
+                    + 0.30 * sin(t * Float.pi * 9.3 + seed * 2.7)
+                    + 0.18 * sin(t * Float.pi * 17.1 + seed * 1.3))
+                h += height * 0.25 * abs(sin(t * Float.pi * 2.6 + seed * 0.7))
+                h = max(h, height * 0.06)
+                xs.append(x)
+                hs.append(h)
+            }
+            var verts: [SCNVector3] = []
+            var idx: [Int32] = []
+            // 背面一个 y=groundY 底边，组成条带三角
+            for i in 0...seg {
+                verts.append(SCNVector3(xs[i], groundY, baseZ))            // 底
+                verts.append(SCNVector3(xs[i], groundY + hs[i] * 3.2, baseZ)) // 顶
+            }
+            for i in 0..<seg {
+                let b = Int32(i * 2)
+                idx.append(contentsOf: [b, b + 1, b + 2,
+                                        b + 1, b + 3, b + 2])
+            }
+            let src = SCNGeometrySource(vertices: verts)
+            let elem = SCNGeometryElement(indices: idx, primitiveType: .triangles)
+            let geo = SCNGeometry(sources: [src], elements: [elem])
+            let m = SCNMaterial()
+            m.diffuse.contents = color
+            m.emission.contents = color.withAlphaComponent(0.35)
+            m.emission.intensity = 0.3
+            m.lightingModel = .constant
+            m.isDoubleSided = true
+            geo.materials = [m]
+            let n = SCNNode(geometry: geo)
+            scene.rootNode.addChildNode(n)
+        }
+        // 远层：蓝紫剪影；近层：暖深色
+        ridgeLayer(baseZ: -52, height: 4.5,
+                   color: UIColor(red: 0.30, green: 0.24, blue: 0.42, alpha: 1.0),
+                   seed: 1.7)
+        ridgeLayer(baseZ: -38, height: 3.0,
+                   color: UIColor(red: 0.34, green: 0.26, blue: 0.32, alpha: 1.0),
+                   seed: 4.2)
     }
 
     private static func makeEnvMap() -> UIImage {
@@ -541,6 +693,10 @@ final class CarSceneView: SCNView {
         let built = model.buildTree(paint: paint)
         carRoot.addChildNode(built.0)
         pivots = built.1
+        // 车停到路面：模型最低点贴到 groundY（路面在 y=0）
+        if let b = model?.bounds {
+            carRoot.position = SCNVector3(0, -b.min.y, 0)
+        }
         frameCamera()
     }
 
@@ -551,7 +707,7 @@ final class CarSceneView: SCNView {
                                   (b.min.y + b.max.y) / 2,
                                   (b.min.z + b.max.z) / 2)
         extent = max(b.max.x - b.min.x, max(b.max.y - b.min.y, b.max.z - b.min.z))
-        target = SIMD3<Float>(center.x, center.y + extent * 0.06, center.z)
+        target = SIMD3<Float>(center.x, center.y + extent * 0.05, center.z)
         radius = extent * 1.30
         radius0 = radius
         yaw = 0.62

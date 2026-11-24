@@ -265,6 +265,27 @@ ce.temp + operationScheduling.duration ✅ 已验证
 车窗/天窗功能行 -> 预约/钥匙两行列表。
 
 
+## v0.8.1（2026-11-24）充电启停接入
+
+充电启停服务码已解出（离线静态分析，子代理 charge-re 完成）：
+- serviceId **RCS**（`GRIServiceIdType` rawValue 47），RCO(48) 是放电/RCO 模式
+- 参数键 `rcs.restart`(start) / `rcs.terminate`(stop) / `rcs.setting`(带 soc) / `rcs.immediately` / `soc` / `altCurrent`
+- path 指向充电域 **`/ms-charge-manage/api/v1.0/charge/control`**，不是 `/remoteControl/control`
+- 充电口盖：开 `RDO` + `{"key":"key","value":"back-charge-lid"}`，关 `RDC` + `front-charge-lid`
+- 完整证据链（含 53 项 serviceId 全表、地址索引、返回码分流验证法）见 `carapp/PROTOCOL.md`
+
+代码改动：
+- `src/Api.swift` 新增 `chargeControl(_:completion:)`（走充电域 path）+ `CarCommand.chargeStart()` / `chargeStart(soc:)` / `chargeStop()` / `chargeImmediately()` / `chargeLidOpen()` / `chargeLidClose()`
+- `src/ContentView.swift` 的 `CarStore` 新增 `runCharge(_:_:successText:)`（与 `run` 同构，改走 chargeControl）
+- `src/EnergyView.swift` 的「开始充电 / 停止充电」按钮从占位 toast 改为真实下发
+- 版本 0.8.1(10)
+
+产物：`CarCtrl-unsigned-v0.8.1.ipa` 24,175,864 字节（Actions run 45347667518，artifact 14898263098）
+Release：https://github.com/ZHIFANSONG/LynkCoHelper/releases/download/v0.8.1/CarCtrl-unsigned-v0.8.1.ipa
+
+⚠️ 充电指令尚未实车验证；RWS/RHL 仍未实车验证。
+
 ## Release
 
 - v0.5.0 (2026-11-23): https://github.com/ZHIFANSONG/LynkCoHelper/releases/download/v0.5.0/CarCtrl-unsigned-v0.5.0.ipa
+- v0.8.1 (2026-11-24): https://github.com/ZHIFANSONG/LynkCoHelper/releases/download/v0.8.1/CarCtrl-unsigned-v0.8.1.ipa

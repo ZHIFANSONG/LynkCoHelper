@@ -103,6 +103,35 @@ final class CarStore: ObservableObject {
             }
         }
     }
+
+    /// 充电指令下发（走 /ms-charge-manage 充电域，不是 /remoteControl）
+    func runCharge(_ name: String, _ payload: [String: Any], successText: String) {
+        guard hasToken else {
+            show("请先在设置里填入 accessToken", ok: false)
+            Haptics.error()
+            return
+        }
+        busyAction = name
+        CarApi.chargeControl(payload) { [weak self] r in
+            guard let self = self else { return }
+            switch r {
+            case .success(let res):
+                self.busyAction = nil
+                self.show(successText, ok: true)
+                Haptics.success()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                    CarApi.processResult(sessionID: res.sessionID) { d in
+                        if let d = d { self.show(d, ok: true) }
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 3) { self.refresh(silent: true) }
+                }
+            case .failure(let e):
+                self.busyAction = nil
+                self.show(e.message, ok: false)
+                Haptics.error()
+            }
+        }
+    }
 }
 
 struct ContentView: View {

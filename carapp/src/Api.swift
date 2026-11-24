@@ -273,6 +273,26 @@ enum CarApi {
         }
     }
 
+    /// 充电域控制（RCS 走 /ms-charge-manage，不是 /remoteControl）
+    /// 逆向依据见 work/carapp/PROTOCOL.md 第二节
+    static func chargeControl(_ payload: [String: Any],
+                              completion: @escaping (Result<ControlResult, ApiError>) -> Void) {
+        guard let body = try? JSONSerialization.data(withJSONObject: payload) else {
+            completion(.failure(ApiError(code: "BAD_BODY", message: "报文序列化失败")))
+            return
+        }
+        raw(method: "POST", host: CarConfig.gricG,
+            path: "/ms-charge-manage/api/v1.0/charge/control",
+            body: body) { r in
+            switch r {
+            case .success(let o):
+                let sid = ((o["data"] as? [String: Any])?["sessionId"] as? String) ?? ""
+                completion(.success(ControlResult(sessionID: sid)))
+            case .failure(let e): completion(.failure(e))
+            }
+        }
+    }
+
     /// 查询指令回执（description 形如「解锁指令已发送」，status 1=成功）
     static func processResult(sessionID: String,
                               completion: @escaping (String?) -> Void) {
@@ -353,5 +373,46 @@ enum CarCommand {
     static func flashHorn(_ type: String = "horn-light-flash") -> [String: Any] {
         ["command": "start", "serviceId": "RHL",
          "setting": ["serviceParameters": [["key": "hrl", "value": type]]]]
+    }
+
+    // MARK: 充电（RCS，2026-11-24 静态逆向解出）
+
+    /// 开始充电（不带目标电量，App 默认路径 → rcs.restart）
+    static func chargeStart() -> [String: Any] {
+        ["command": "start", "serviceId": "RCS",
+         "setting": ["serviceParameters": [["key": "rcs.restart", "value": "1"]]]]
+    }
+
+    /// 开始充电并设定目标电量（带 soc → rcs.setting）
+    static func chargeStart(soc: Int) -> [String: Any] {
+        ["command": "start", "serviceId": "RCS",
+         "setting": ["serviceParameters": [
+            ["key": "soc", "value": "\\(soc)"],
+            ["key": "rcs.setting", "value": "1"],
+         ]]]
+    }
+
+    /// 停止充电（rcs.terminate）
+    static func chargeStop() -> [String: Any] {
+        ["command": "stop", "serviceId": "RCS",
+         "setting": ["serviceParameters": [["key": "rcs.terminate", "value": "1"]]]]
+    }
+
+    /// 立即充电（rcs.immediately，value 恒为 "1"）
+    static func chargeImmediately() -> [String: Any] {
+        ["command": "immediately", "serviceId": "RCS",
+         "setting": ["serviceParameters": [["key": "rcs.immediately", "value": "1"]]]]
+    }
+
+    /// 充电口盖开（RDO，back-charge-lid = 打开）
+    static func chargeLidOpen() -> [String: Any] {
+        ["command": "start", "serviceId": "RDO",
+         "setting": ["serviceParameters": [["key": "key", "value": "back-charge-lid"]]]]
+    }
+
+    /// 充电口盖关（RDC，front-charge-lid = 关闭）
+    static func chargeLidClose() -> [String: Any] {
+        ["command": "stop", "serviceId": "RDC",
+         "setting": ["serviceParameters": [["key": "key", "value": "front-charge-lid"]]]]
     }
 }

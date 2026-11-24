@@ -581,7 +581,7 @@ final class CarSceneView: SCNView {
         // 顶部主光：模拟棚顶柔光箱，正上方垂直打下 → 车漆高光呈长条（"温润"）
         let top = SCNLight()
         top.type = .area
-        top.areaExtents = CGSize(width: 40, height: 20)
+        top.areaExtents = simd_float3(40, 20, 0)
         top.color = UIColor(red: 1.0, green: 0.98, blue: 0.95, alpha: 1)
         top.intensity = 2200
         top.castsShadow = true
@@ -683,8 +683,8 @@ final class CarSceneView: SCNView {
     /// 按真实太阳位置 + 云量重渲天空/太阳/雾/环境反射（"动态太阳光线"）
     private func renderSky() {
         guard let scene = self.scene else { return }
-        let sun = solarPosition()
-        let el = sun.elevation
+        let sunPos = solarPosition()
+        let el = sunPos.elevation
         let cloud = envCloud
 
         // —— 天空贴图：高度角分档（白天 / 晨昏 / 夜晚），云量偏移分档边界 ——
@@ -704,12 +704,12 @@ final class CarSceneView: SCNView {
             skyNode?.geometry?.firstMaterial?.emission.intensity = 1.0 - 0.35 * cloud
         }
         // 天空球随方位角旋转：把贴图的暖光带转到太阳方向
-        skyNode?.eulerAngles = SCNVector3(0, Float((sun.azimuth - 210) * .pi / 180.0), 0)
+        skyNode?.eulerAngles = SCNVector3(0, Float((sunPos.azimuth - 210) * .pi / 180.0), 0)
 
         // —— 太阳直射光：方向 = 真实高度角/方位角，颜色与强度随高度角/云量 ——
         if let sNode = sunNode, let sun = sNode.light {
             let elR = Float(sunElRad(el))
-            let azR = Float(sun.azimuth * .pi / 180.0)
+            let azR = Float(sunPos.azimuth * .pi / 180.0)
             let d: Float = 80
             sNode.position = SCNVector3(d * cos(elR) * sin(azR),
                                         max(d * sin(elR), 6),      // 贴地平线时压低，避免穿地

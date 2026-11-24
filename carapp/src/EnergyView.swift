@@ -168,7 +168,8 @@ struct EnergyView: View {
                 HStack(spacing: 10) {
                     Button {
                         Haptics.tap()
-                        store.show("充电启停的服务码还在确认中，暂不会下发", ok: false)
+                        store.runCharge("chargeStart", CarCommand.chargeStart(),
+                                        successText: "开始充电指令已发送")
                     } label: {
                         Text("开始充电")
                             .font(.system(size: 13, weight: .semibold))
@@ -182,7 +183,8 @@ struct EnergyView: View {
 
                     Button {
                         Haptics.tap()
-                        store.show("充电启停的服务码还在确认中，暂不会下发", ok: false)
+                        store.runCharge("chargeStop", CarCommand.chargeStop(),
+                                        successText: "停止充电指令已发送")
                     } label: {
                         Text("停止充电")
                             .font(.system(size: 13, weight: .semibold))

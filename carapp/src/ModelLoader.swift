@@ -471,9 +471,9 @@ final class CarSceneView: SCNView {
         return imgs
     }
 
-    // MARK: 黄昏公路场景
+    // MARK: 动态天空场景（太阳位置 = f(车辆位置, 时间)，天气调制）
 
-    /// 当前外观模式（ ContentView 在 onAppear 时设置，影响天空/环境用哪套贴图）
+    /// 当前外观模式（ContentView 对齐 UI 配色用）
     var sceneDayMode = false {
         didSet {
             guard sceneDayMode != oldValue else { return }
@@ -483,6 +483,28 @@ final class CarSceneView: SCNView {
     private var skyNode: SCNNode?
     private var groundNode: SCNNode?
     private var roadNode: SCNNode?
+    private var mirrorWrap: SCNNode?
+    private var mirrorPivots: [String: SCNNode] = [:]
+    private var sunNode: SCNNode?
+    private var sunDiscNode: SCNNode?
+    private var resetWork: DispatchWorkItem?          // 固定镜头自动回归
+    private var defaultYaw: Float = 2.52
+    private var defaultPitch: Float = 0.20
+    private var defaultRadius: Float = 0
+    private var envLat: Double = 34.70
+    private var envLon: Double = 113.70
+    private var envCloud: Double = 0.3
+
+    /// 外部（ContentView）设置车辆位置 / 云量后调用
+    func applyEnvironment(lat: Double, lon: Double, cloud: Double) {
+        if lat != 0 { envLat = lat }
+        if lon != 0 { envLon = lon }
+        envCloud = max(0, min(1, cloud))
+        renderSky()
+    }
+
+    /// 时间流逝后重新渲染（太阳位置随时间走）
+    func refreshSky() { renderSky() }
 
     private static func tex(_ name: String) -> UIImage? {
         guard let u = Bundle.main.url(forResource: name, withExtension: "png", subdirectory: "cartex")
@@ -516,19 +538,28 @@ final class CarSceneView: SCNView {
         // ---- 远山：两层起伏剪影（程序生成山脊线 mesh） ----
         addMountains(scene, groundY: groundY)
 
-        // ---- 地台：光滑反光地面（参考图是镜面水感，不是沥青路）
-        //   低粗糙度 PBR + lightingEnvironment 反射 → 地面映出晚霞暖带
+        // ---- 地台：大理石微反射地面（车影用 mirrorWrap 镜像车叠加，"微微反射车辆类似大理石"）----
         let floorGeo = SCNPlane(width: 320, height: 320)
         let floorMat = SCNMaterial()
         floorMat.lightingModel = .physicallyBased
-        floorMat.diffuse.contents = UIColor(red: 0.052, green: 0.050, blue: 0.062, alpha: 1)
+        if let marble = CarSceneView.tex("floor_marble") {
+            floorMat.diffuse.contents = marble
+            floorMat.diffuse.wrapS = .repeat
+            floorMat.diffuse.wrapT = .repeat
+            floorMat.diffuse.contentsTransform = SCNMatrix4MakeScale(7, 7, 1)   // 纹理平铺
+        } else {
+            floorMat.diffuse.contents = UIColor(red: 0.085, green: 0.088, blue: 0.105, alpha: 1)
+        }
         floorMat.metalness.contents = 0.0
-        floorMat.roughness.contents = 0.24
-        floorMat.specular.contents = UIColor(white: 0.9, alpha: 1)
+        floorMat.roughness.contents = 0.26
+        floorMat.specular.contents = UIColor(white: 0.92, alpha: 1)
+        floorMat.transparency = 0.85                  // 微透：让倒影透出来 15%
+        floorMat.writesToDepthBuffer = false          // 不写深度，倒影才能透显
         floorGeo.materials = [floorMat]
         let floorN = SCNNode(geometry: floorGeo)
         floorN.eulerAngles.x = -.pi / 2
         floorN.position = SCNVector3(0, groundY, 0)
+        floorN.renderingOrder = 2                     // 透明地台最后画，盖在倒影上
         scene.rootNode.addChildNode(floorN)
         groundNode = floorN
 
@@ -538,19 +569,37 @@ final class CarSceneView: SCNView {
         scene.fogEndDistance = 150
         scene.fogDensityExponent = 1.2
 
-        // ---- 灯光：黄昏太阳 = 暖色低角度直射光 ----
+        // ---- 灯光：顶部柔光为主（"光线为顶部光源，车漆温润如玉"）+ 太阳随 renderSky 转向 ----
         let ambient = SCNLight()
         ambient.type = .ambient
-        ambient.color = UIColor(red: 1.0, green: 0.80, blue: 0.62, alpha: 1)  // 暖霞环境光
-        ambient.intensity = 240
+        ambient.color = UIColor(red: 0.92, green: 0.93, blue: 0.98, alpha: 1)   // 中性偏冷环境光
+        ambient.intensity = 260
         let aNode = SCNNode()
         aNode.light = ambient
         scene.rootNode.addChildNode(aNode)
 
+        // 顶部主光：模拟棚顶柔光箱，正上方垂直打下 → 车漆高光呈长条（"温润"）
+        let top = SCNLight()
+        top.type = .area
+        top.areaExtents = CGSize(width: 40, height: 20)
+        top.color = UIColor(red: 1.0, green: 0.98, blue: 0.95, alpha: 1)
+        top.intensity = 2200
+        top.castsShadow = true
+        top.shadowMode = .deferred
+        top.shadowRadius = 10
+        top.shadowColor = UIColor.black.withAlphaComponent(0.30)
+        top.shadowMapSize = CGSize(width: 2048, height: 2048)
+        let tNode = SCNNode()
+        tNode.light = top
+        tNode.position = SCNVector3(0, 48, 4)        // 正上方略偏前
+        tNode.look(at: SCNVector3Zero, up: SCNVector3(0, 1, 0), localFront: SCNVector3(0, 0, -1))
+        scene.rootNode.addChildNode(tNode)
+
+        // 太阳方向光：renderSky() 里按真实高度角/方位角摆位置与颜色
         let sun = SCNLight()
         sun.type = .directional
-        sun.color = UIColor(red: 1.0, green: 0.72, blue: 0.50, alpha: 1)     // 落日暖橙
-        sun.intensity = 520                                                   // 暖色主光，压过高光不压亮度
+        sun.color = UIColor(red: 1.0, green: 0.72, blue: 0.50, alpha: 1)
+        sun.intensity = 520
         sun.castsShadow = true
         sun.shadowMode = .deferred
         sun.shadowRadius = 6
@@ -559,37 +608,146 @@ final class CarSceneView: SCNView {
         sun.orthographicScale = 14
         let sNode = SCNNode()
         sNode.light = sun
-        sNode.position = SCNVector3(24, 12, 13)     // 低角度暖光（黄昏太阳）
+        sNode.position = SCNVector3(24, 12, 13)
         sNode.look(at: SCNVector3Zero, up: SCNVector3(0, 1, 0), localFront: SCNVector3(0, 0, -1))
         scene.rootNode.addChildNode(sNode)
+        sunNode = sNode                       // ★ 保存引用给 renderSky 用
 
-        // 天空侧的冷色补光（黄昏反差）
+        // 太阳可见圆盘（renderSky 按方位角摆位）
+        let disc = SCNSphere(radius: 3.2)
+        let discMat = SCNMaterial()
+        discMat.lightingModel = .constant
+        discMat.emission.contents = UIColor(red: 1.0, green: 0.92, blue: 0.78, alpha: 1)
+        discMat.emission.intensity = 3
+        discMat.diffuse.contents = UIColor.black
+        disc.materials = [discMat]
+        let discNode = SCNNode(geometry: disc)
+        discNode.renderingOrder = -1
+        scene.rootNode.addChildNode(discNode)
+        sunDiscNode = discNode
+
+        // 天空侧的冷色补光
         let skyFill = SCNLight()
         skyFill.type = .directional
-        skyFill.color = UIColor(red: 0.45, green: 0.50, blue: 0.72, alpha: 1)
-        skyFill.intensity = 260
+        skyFill.color = UIColor(red: 0.52, green: 0.58, blue: 0.76, alpha: 1)
+        skyFill.intensity = 220
         let sfNode = SCNNode()
         sfNode.light = skyFill
-        sfNode.position = SCNVector3(-20, 10, -14)
+        sfNode.position = SCNVector3(-20, 14, -14)
         sfNode.look(at: SCNVector3Zero, up: SCNVector3(0, 1, 0), localFront: SCNVector3(0, 0, -1))
         scene.rootNode.addChildNode(sfNode)
 
-        // ---- 环境反射：换黄昏 env（车漆反射里是晚霞而不是白棚灯） ----
+        // ---- 环境反射 ----
         applySceneTheme()
     }
 
     private func applySceneTheme() {
+        renderSky()
+    }
+
+    /// 简化 NOAA 太阳位置（误差约 1°，渲染足够）→ (高度角°, 方位角°从北顺时针)
+    private func solarPosition() -> (elevation: Double, azimuth: Double) {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = TimeZone(identifier: "Asia/Shanghai") ?? .current
+        let now = Date()
+        let year = cal.component(.year, from: now)
+        let startOfYear = cal.date(from: DateComponents(year: year, month: 1, day: 1))!
+        let doy = Double(cal.dateComponents([.day], from: startOfYear, to: now).day ?? 0) + 1
+        let hour = Double(cal.component(.hour, from: now)) + Double(cal.component(.minute, from: now)) / 60.0
+
+        let gamma = 2.0 * .pi / 365.0 * (doy - 1 + (hour - 12) / 24.0)
+        let eqtime = 229.18 * (0.000075 + 0.001868 * cos(gamma) - 0.032077 * sin(gamma)
+                                - 0.014615 * cos(2 * gamma) - 0.040849 * sin(2 * gamma))
+        let decl = 0.006918 - 0.399912 * cos(gamma) + 0.070257 * sin(gamma)
+                    - 0.006758 * cos(2 * gamma) + 0.000907 * sin(2 * gamma)
+        let timeOffset = eqtime + 4.0 * envLon - 60.0 * 8.0        // UTC+8
+        let tst = hour * 60.0 + timeOffset
+        let ha = (tst / 4.0 - 180.0) * .pi / 180.0
+        let latR = envLat * .pi / 180.0
+
+        let cosZ = sin(latR) * sin(decl) + cos(latR) * cos(decl) * cos(ha)
+        let z = acos(min(1, max(-1, cosZ)))
+        let elevation = 90.0 - z * 180.0 / .pi
+
+        var azimuth = 0.0
+        let denom = cos(latR) * sin(z)
+        if abs(denom) > 1e-6 {
+            var cosAz = (sin(latR) * cosZ - sin(decl)) / denom
+            cosAz = min(1, max(-1, cosAz))
+            azimuth = acos(cosAz) * 180.0 / .pi
+            if ha > 0 { azimuth = 360.0 - azimuth }
+        }
+        return (elevation, azimuth)
+    }
+
+    /// 按真实太阳位置 + 云量重渲天空/太阳/雾/环境反射（"动态太阳光线"）
+    private func renderSky() {
         guard let scene = self.scene else { return }
-        let day = sceneDayMode
-        let skyName = day ? "sky_day" : "sky_dusk"
-        let envName = day ? "env_day" : "env_dusk"
+        let sun = solarPosition()
+        let el = sun.elevation
+        let cloud = envCloud
+
+        // —— 天空贴图：高度角分档（白天 / 晨昏 / 夜晚），云量偏移分档边界 ——
+        let dayBias = cloud * 8.0            // 阴天提前进入黄昏观感
+        let skyName: String
+        let envName: String
+        if el > 10 + dayBias {
+            skyName = "sky_day"; envName = "env_day"
+        } else if el > -5 - dayBias {
+            skyName = "sky_dusk"; envName = "env_dusk"
+        } else {
+            skyName = "sky_night"; envName = "env_night"
+        }
         if let skyImg = CarSceneView.tex(skyName) {
             skyNode?.geometry?.firstMaterial?.diffuse.contents = skyImg
             skyNode?.geometry?.firstMaterial?.emission.contents = skyImg
+            skyNode?.geometry?.firstMaterial?.emission.intensity = 1.0 - 0.35 * cloud
         }
+        // 天空球随方位角旋转：把贴图的暖光带转到太阳方向
+        skyNode?.eulerAngles = SCNVector3(0, Float((sun.azimuth - 210) * .pi / 180.0), 0)
+
+        // —— 太阳直射光：方向 = 真实高度角/方位角，颜色与强度随高度角/云量 ——
+        if let sNode = sunNode, let sun = sNode.light {
+            let elR = Float(sunElRad(el))
+            let azR = Float(sun.azimuth * .pi / 180.0)
+            let d: Float = 80
+            sNode.position = SCNVector3(d * cos(elR) * sin(azR),
+                                        max(d * sin(elR), 6),      // 贴地平线时压低，避免穿地
+                                        d * cos(elR) * cos(azR))
+            sNode.look(at: SCNVector3Zero, up: SCNVector3(0, 1, 0), localFront: SCNVector3(0, 0, -1))
+
+            // 太阳圆盘同步摆位（贴在天空球内侧）
+            if let disc = sunDiscNode {
+                let dd: Float = 112
+                disc.position = SCNVector3(dd * cos(elR) * sin(azR),
+                                           max(dd * sin(elR), 2),
+                                           dd * cos(elR) * cos(azR))
+            }
+
+            // 高度角 0°→90°：日落橙 → 正午暖白
+            let t = CGFloat(min(1, max(0, el / 55.0)))
+            let warm = UIColor(red: 1.0, green: 0.70, blue: 0.46, alpha: 1)
+            let noon = UIColor(red: 1.0, green: 0.95, blue: 0.87, alpha: 1)
+            sun.color = blend(warm, noon, t)
+            // 云量削弱强度（阴天约 -45%），高度角低时强度也降
+            let elevGain = CGFloat(min(1, max(0.25, (el + 6) / 40.0)))
+            sun.intensity = 560 * elevGain * (1.0 - 0.45 * CGFloat(cloud))
+        }
+
+        // —— 雾 / 环境反射随天空档位 ——
+        let fog: UIColor
+        if el > 10 + dayBias {
+            fog = UIColor(red: 0.72, green: 0.78, blue: 0.88, alpha: 1)
+        } else if el > -5 - dayBias {
+            fog = UIColor(red: 0.86, green: 0.66, blue: 0.56, alpha: 1)
+        } else {
+            fog = UIColor(red: 0.12, green: 0.13, blue: 0.20, alpha: 1)
+        }
+        scene.fogColor = fog
+
         if let envImg = CarSceneView.tex(envName) {
             scene.lightingEnvironment.contents = envImg
-            scene.lightingEnvironment.intensity = day ? 1.7 : 2.1   // ★ 提亮反射：漆面光泽靠它
+            scene.lightingEnvironment.intensity = (1.7 - 0.5 * CGFloat(cloud)) * (el > 10 ? 1.0 : 0.85)
         } else if let cube = CarSceneView.loadEnvCube() {
             scene.lightingEnvironment.contents = cube
             scene.lightingEnvironment.intensity = 1.0
@@ -597,6 +755,15 @@ final class CarSceneView: SCNView {
             scene.lightingEnvironment.contents = CarSceneView.makeEnvMap()
             scene.lightingEnvironment.intensity = 0.9
         }
+    }
+
+    private func sunElRad(_ el: Double) -> Double { el * .pi / 180.0 }
+
+    private func blend(_ a: UIColor, _ b: UIColor, _ t: CGFloat) -> UIColor {
+        var ar: CGFloat = 0, ag: CGFloat = 0, ab: CGFloat = 0, br: CGFloat = 0, bg: CGFloat = 0, bb: CGFloat = 0
+        a.getRed(&ar, green: &ag, blue: &ab, alpha: nil)
+        b.getRed(&br, green: &bg, blue: &bb, alpha: nil)
+        return UIColor(red: ar + (br - ar) * t, green: ag + (bg - ag) * t, blue: ab + (bb - ab) * t, alpha: 1)
     }
 
     /// 两层远山剪影：程序生成的起伏山脊
@@ -674,6 +841,7 @@ final class CarSceneView: SCNView {
         self.model = model
         self.currentPaint = paint
         carRoot.childNodes.forEach { $0.removeFromParentNode() }
+        mirrorWrap?.removeFromParentNode()
 
         let built = model.buildTree(paint: paint)
         carRoot.addChildNode(built.0)
@@ -681,6 +849,30 @@ final class CarSceneView: SCNView {
         // 车停到路面：模型最低点贴到 groundY（路面在 y=0）
         let b = model.bounds
         carRoot.position = SCNVector3(0, -b.min.y, 0)
+
+        // ★ 倒影：克隆车体 y 轴镜像放到地面下，微透明 → "地面微微反射车辆类似大理石"
+        //   数学上：镜像平面 y=0 时 wrapper(位置 y=-carRoot.y, scale.y=-1) 的世界变换
+        //   恰等于 原世界变换 的镜像，所以镜像克隆体保持同名铰链同角度即可完美同步。
+        let mirror = SCNNode()
+        mirror.name = "mirrorWrap"
+        mirror.scale = SCNVector3(1, -1, 1)
+        mirror.position = SCNVector3(0, -carRoot.position.y, 0)
+        let clone = built.0.clone()
+        mirror.addChildNode(clone)
+        mirror.opacity = 0.16                 // 微弱倒影
+        mirror.renderingOrder = 1             // 先画倒影，地台(2)盖上去
+        mirror.enumerateHierarchy { n, _ in
+            n.castsShadow = false
+            n.movabilityHint = .fixed
+        }
+        scene?.rootNode.addChildNode(mirror)
+        mirrorWrap = mirror
+        // 收集镜像铰链（同名 pivot），动作时同步
+        mirrorPivots = [:]
+        mirror.enumerateHierarchy { n, _ in
+            if let nm = n.name, nm.hasPrefix("pivot_") { mirrorPivots[nm] = n }
+        }
+
         frameCamera()
     }
 
@@ -698,7 +890,28 @@ final class CarSceneView: SCNView {
         pitch = 0.20
         yaw0 = yaw
         pitch0 = pitch
+        defaultYaw = yaw                // ★ 固定镜头基准（自动回归用）
+        defaultPitch = pitch
+        defaultRadius = radius
         applyCamera(animated: false)
+    }
+
+    /// 松手 4 秒后自动回到固定镜头（"希望固定一个镜头自动回到这个视角"）
+    private func scheduleCameraReset() {
+        resetWork?.cancel()
+        let w = DispatchWorkItem { [weak self] in
+            guard let self = self else { return }
+            SCNTransaction.begin()
+            SCNTransaction.animationDuration = 0.9
+            SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+            self.yaw = self.defaultYaw
+            self.pitch = self.defaultPitch
+            self.radius = self.defaultRadius
+            self.applyCamera(animated: false)
+            SCNTransaction.commit()
+        }
+        resetWork = w
+        DispatchQueue.main.asyncAfter(deadline: .now() + 4.0, execute: w)
     }
 
     private func applyCamera(animated: Bool) {
@@ -724,11 +937,13 @@ final class CarSceneView: SCNView {
 
     // MARK: 手势
 
-    /// 横向拖动才转视角，纵向留给外层 ScrollView，避免手势打架
+    /// 拖动跟手：手势从触点一开始就响应（SCNView 默认会等识别失败才给滚动手势，
+    /// 这里放宽阈值让横向/斜向拖动都直接转视角）
     override func gestureRecognizerShouldBegin(_ g: UIGestureRecognizer) -> Bool {
         if let p = g as? UIPanGestureRecognizer {
             let v = p.velocity(in: self)
-            return abs(v.x) > abs(v.y) * 1.05
+            // 只要是以横向为主的拖动就转视角；纯纵向留给外层 ScrollView 翻页
+            return abs(v.x) > abs(v.y) * 0.4
         }
         return true
     }
@@ -737,17 +952,18 @@ final class CarSceneView: SCNView {
         let t = g.translation(in: self)
         switch g.state {
         case .began:
+            resetWork?.cancel()
             yaw0 = yaw
             pitch0 = pitch
         case .changed:
-            yaw = yaw0 - Float(t.x) * 0.008
-            pitch = min(0.85, max(-0.05, pitch0 + Float(t.y) * 0.005))
+            yaw = yaw0 - Float(t.x) * 0.011          // ★ 0.008→0.011 更跟手
+            pitch = min(0.85, max(-0.05, pitch0 + Float(t.y) * 0.007))
             applyCamera(animated: false)
         default:
             // 惯性：松手后按速度继续转一点
             let v = g.velocity(in: self)
-            let dy = -Float(v.x) * 0.00035
-            let dp = Float(v.y) * 0.00022
+            let dy = -Float(v.x) * 0.00045
+            let dp = Float(v.y) * 0.00028
             let ny = yaw + dy
             let np = min(0.85, max(-0.05, pitch + dp))
             SCNTransaction.begin()
@@ -757,18 +973,20 @@ final class CarSceneView: SCNView {
             pitch = np
             applyCamera(animated: false)
             SCNTransaction.commit()
+            scheduleCameraReset()                    // 4 秒后自动回固定镜头
         }
     }
 
     @objc private func onPinch(_ g: UIPinchGestureRecognizer) {
         switch g.state {
         case .began:
+            resetWork?.cancel()
             radius0 = radius
         case .changed:
             radius = min(extent * 2.6, max(extent * 0.72, radius0 / Float(g.scale)))
             applyCamera(animated: false)
         default:
-            break
+            scheduleCameraReset()
         }
     }
 
@@ -820,14 +1038,19 @@ final class CarSceneView: SCNView {
         // 只支持绕单轴（我们的铰链都是 Y 或 Z）
         let e = axis.y > 0.5 ? SCNVector3(0, a, 0)
             : (axis.z > 0.5 ? SCNVector3(0, 0, a) : SCNVector3(a, 0, 0))
+        // ★ 倒影同步：y 镜像下 Y 轴旋转不变、Z/X 轴旋转要取反
+        let e2 = axis.y > 0.5 ? e : SCNVector3(-e.x, e.y, -e.z)
+        let mirror = mirrorPivots[node.name ?? ""]
         if animated {
             SCNTransaction.begin()
             SCNTransaction.animationDuration = duration
             SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
             node.eulerAngles = e
+            mirror?.eulerAngles = e2
             SCNTransaction.commit()
         } else {
             node.eulerAngles = e
+            mirror?.eulerAngles = e2
         }
     }
 

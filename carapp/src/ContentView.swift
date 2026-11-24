@@ -116,6 +116,9 @@ struct ContentView: View {
 
     /// 车模动作状态：由按钮驱动，3D 车模随之做出反应
     @State private var carViewRef = CarViewModel()
+    @State private var evMode = 0          // 0=百分比 1=剩余里程
+    @State private var fuelMode = 0        // 0=百分比 1=剩余里程 2=剩余升数
+    @State private var cloudCover = 0.3    // 云量 0..1，影响天空贴图与太阳强度
 
     private let fuelBlue = Color(red: 0.24, green: 0.55, blue: 0.98)
     private let accentBlue = Color(red: 0.16, green: 0.47, blue: 1.0)
@@ -138,10 +141,17 @@ struct ContentView: View {
 
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
-                    topBar
-                    rangeBlock
-                    // 场景区域：天空从信息栏底下开始铺
-                    carStage
+                    // ★ 场景 + 信息栏一体化：信息栏浮在天空上方（参考图构图），
+                    //   不再是"深色信息栏 + 场景"两截断层。浮层只占场景上部，
+                    //   车身区域留给 SCNView 手势拖动。
+                    ZStack(alignment: .top) {
+                        carStage
+                        VStack(spacing: 0) {
+                            topBar
+                            rangeBlock
+                            Spacer(minLength: 0)
+                        }
+                    }
                     actionRow
                     pager
                     bigCards
@@ -176,10 +186,12 @@ struct ContentView: View {
             if p == .active {
                 store.refresh(silent: true)
                 store.startAutoRefresh()
+                fetchCloud()
             } else {
                 store.stopAutoRefresh()
             }
         }
+        .onChange(of: store.status.latitude) { _ in fetchCloud() }
         .sheet(isPresented: $showEnergy) {
             EnergyView(store: store).presentationDetents([.large])
         }
@@ -280,70 +292,110 @@ struct ContentView: View {
                 .padding(.bottom, 6)
             }
 
-            rangeBar
-
-            // 油 / 电 明细
-            HStack(spacing: 14) {
-                energyDot(color: Palette.brand, icon: "bolt.fill",
-                          label: String(format: "%.0f%%", store.status.chargeLevel),
-                          detail: String(format: "%.0f km", store.status.distanceToEmpty))
-                energyDot(color: fuelBlue, icon: "fuelpump.fill",
-                          label: String(format: "%.0f%%", store.status.fuelLevelPct),
-                          detail: String(format: "%.0f km", store.status.fuelRange))
-                Spacer()
-                HStack(spacing: 4) {
-                    Image(systemName: store.status.hasLocation ? "location.fill" : "location.slash.fill")
-                        .font(.system(size: 9))
-                    Text(store.status.hasLocation
-                         ? String(format: "%.3f, %.3f", store.status.latitude, store.status.longitude)
-                         : "位置未知")
-                        .font(.system(size: 10, design: .monospaced))
+            // ★ 上下两个横条（参考图 2）：电量绿条 + 油量蓝条，点击切换显示单位
+            VStack(spacing: 9) {
+                energyBar(tint: Palette.brand, icon: "bolt.fill", title: "电量",
+                          fraction: store.status.chargeLevel / 100,
+                          valueText: evMode == 0
+                            ? String(format: "%.0f%%", store.status.chargeLevel)
+                            : String(format: "%.0f km", store.status.distanceToEmpty),
+                          mode: evMode, modes: 2) {
+                    withAnimation(.easeInOut(duration: 0.25)) { evMode = (evMode + 1) % 2 }
                 }
-                .foregroundStyle(Palette.sub(scheme).opacity(0.75))
+                energyBar(tint: fuelBlue, icon: "fuelpump.fill", title: "油量",
+                          fraction: store.status.fuelLevelPct / 100,
+                          valueText: fuelMode == 0
+                            ? String(format: "%.0f%%", store.status.fuelLevelPct)
+                            : (fuelMode == 1
+                               ? String(format: "%.0f km", store.status.fuelRange)
+                               : String(format: "%.1f L", store.status.fuelLevel)),
+                          mode: fuelMode, modes: 3) {
+                    withAnimation(.easeInOut(duration: 0.25)) { fuelMode = (fuelMode + 1) % 3 }
+                }
             }
+
+            HStack(spacing: 4) {
+                Image(systemName: store.status.hasLocation ? "location.fill" : "location.slash.fill")
+                    .font(.system(size: 9))
+                Text(store.status.hasLocation
+                     ? String(format: "%.3f, %.3f", store.status.latitude, store.status.longitude)
+                     : "位置未知")
+                    .font(.system(size: 10, design: .monospaced))
+                Spacer()
+            }
+            .foregroundStyle(Palette.sub(scheme).opacity(0.75))
         }
         .padding(.horizontal, 20)
         .padding(.top, 10)
     }
 
-    private func energyDot(color: Color, icon: String, label: String, detail: String) -> some View {
-        HStack(spacing: 5) {
-            Image(systemName: icon)
-                .font(.system(size: 9, weight: .bold))
-                .foregroundStyle(color)
-            Text(label)
-                .font(.system(size: 12, weight: .semibold, design: .rounded))
-                .foregroundStyle(Palette.text(scheme))
-            Text(detail)
-                .font(.system(size: 11, weight: .regular, design: .rounded))
-                .foregroundStyle(color.opacity(0.85))
-        }
-    }
-
-    private var rangeBar: some View {
-        GeometryReader { geo in
-            let total = max(store.status.totalRange, 1)
-            let evPart = min(1, max(0, store.status.distanceToEmpty / total))
-            let w = geo.size.width
-            ZStack(alignment: .leading) {
-                Capsule().fill(Palette.card2(scheme)).frame(height: 6)
-                Capsule().fill(Palette.brand).frame(width: max(3, w * evPart), height: 6)
-                Capsule().fill(fuelBlue)
-                    .frame(width: max(3, w * (1 - evPart)), height: 6)
-                    .offset(x: max(3, w * evPart) - 2)
-                    .opacity(0.9)
+    // ★ 参考图 2 的能量横条：点击切换显示单位（电量 %/km，油量 %/km/L）
+    private func energyBar(tint: Color, icon: String, title: String,
+                           fraction: Double, valueText: String,
+                           mode: Int, modes: Int,
+                           action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 10) {
+                Image(systemName: icon)
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(tint)
+                    .frame(width: 16)
+                Text(title)
+                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .foregroundStyle(Palette.sub(scheme))
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        Capsule().fill(Palette.card2(scheme)).frame(height: 8)
+                        Capsule().fill(tint)
+                            .frame(width: max(6, geo.size.width * min(1, max(0, fraction))), height: 8)
+                    }
+                }
+                .frame(height: 8)
+                Text(valueText)
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundStyle(Palette.text(scheme))
+                    .frame(width: 72, alignment: .trailing)
+                    .contentTransition(.numericText())
+                    .animation(.easeInOut(duration: 0.22), value: valueText)
+                HStack(spacing: 3) {
+                    ForEach(0..<modes, id: \.self) { i in
+                        Circle().fill(i == mode ? tint : Palette.sub(scheme).opacity(0.32))
+                            .frame(width: 4, height: 4)
+                    }
+                }
             }
-            .animation(.spring(response: 0.55, dampingFraction: 0.86), value: evPart)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 9)
+            .background(RoundedRectangle(cornerRadius: 14).fill(Palette.card(scheme)))
         }
-        .frame(height: 6)
+        .buttonStyle(.plain)
     }
 
     // MARK: 3D 车模（可拖动）
 
+    // MARK: 天气云量（open-meteo 免费，按车辆位置取，失败回落默认值）
+    private func fetchCloud() {
+        let lat = store.status.latitude, lon = store.status.longitude
+        guard lat != 0 || lon != 0 else { return }
+        let s = String(format: "https://api.open-meteo.com/v1/forecast?latitude=%.4f&longitude=%.4f&current=cloud_cover", lat, lon)
+        guard let url = URL(string: s) else { return }
+        URLSession.shared.dataTask(with: url) { data, _, _ in
+            guard let data = data,
+                  let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let cur = obj["current"] as? [String: Any],
+                  let cc = cur["cloud_cover"] as? Double else { return }
+            DispatchQueue.main.async {
+                cloudCover = min(1, max(0, cc / 100.0))
+            }
+        }.resume()
+    }
+
     private var carStage: some View {
         ZStack(alignment: .topLeading) {
             if let m = sceneModel {
-                SceneKitCarView(model: m, paint: store.paint, ref: carViewRef)
+                SceneKitCarView(model: m, paint: store.paint, ref: carViewRef,
+                                lat: store.status.latitude, lon: store.status.longitude,
+                                cloud: cloudCover)
                     // ★ 不能 allowsHitTesting(false)，否则手指拖不动
                     .allowsHitTesting(true)
             } else {
@@ -776,6 +828,9 @@ struct SceneKitCarView: UIViewRepresentable {
     let model: CarModel
     let paint: Color
     let ref: CarViewModel
+    var lat: Double = 0
+    var lon: Double = 0
+    var cloud: Double = 0.3
     @Environment(\.colorScheme) private var scheme
 
     func makeUIView(context: Context) -> CarSceneView {
@@ -783,6 +838,7 @@ struct SceneKitCarView: UIViewRepresentable {
         v.sceneDayMode = (scheme != .dark)
         v.load(model, paint: UIColor(paint))
         v.startTurntable(false)
+        v.applyEnvironment(lat: lat, lon: lon, cloud: cloud)
         ref.attach(v)
         return v
     }
@@ -790,5 +846,6 @@ struct SceneKitCarView: UIViewRepresentable {
     func updateUIView(_ uiView: CarSceneView, context: Context) {
         uiView.setPaint(UIColor(paint))
         uiView.sceneDayMode = (scheme != .dark)
+        uiView.applyEnvironment(lat: lat, lon: lon, cloud: cloud)
     }
 }

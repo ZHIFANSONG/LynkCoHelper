@@ -142,8 +142,71 @@ def make_env(dusk=True):
     print("saved", "env_dusk" if dusk else "env_day")
 
 
+def make_night():
+    """夜空穹顶 + 夜间反射环境：深蓝 + 星星 + 微弱月光。"""
+    img = Image.new("RGB", (W, H))
+    stops = [
+        (0.00, (10, 12, 32)),
+        (0.22, (18, 22, 50)),
+        (0.40, (34, 40, 74)),
+        (0.50, (52, 58, 92)),
+    ]
+    fill_vgrad(img, stops, (16, 18, 28))
+    rnd = random.Random(20261124)
+    sd = ImageDraw.Draw(img)
+    for _ in range(260):
+        x = rnd.randrange(W)
+        y = rnd.randrange(int(H * 0.46))
+        b = rnd.randrange(70, 235)
+        sd.point((x, y), fill=(b, b, min(255, b + 12)))
+    # 月亮（右上，柔和月晕）
+    glow = Image.new("L", (W, H), 0)
+    gd = ImageDraw.Draw(glow)
+    cx, cy = int(W * 0.74), int(H * 0.18)
+    for r in range(120, 0, -2):
+        a = int(80 * math.exp(-(r / 52.0) ** 2))
+        gd.ellipse([cx - r, cy - r, cx + r, cy + r], fill=a)
+    glow = glow.filter(ImageFilter.GaussianBlur(14))
+    img = Image.composite(Image.new("RGB", (W, H), (214, 222, 246)), img, glow)
+    d = ImageDraw.Draw(img)
+    d.ellipse([cx - 17, cy - 17, cx + 17, cy + 17], fill=(232, 238, 252))
+    img.save(OUT + r"\sky_night.png")
+    print("saved sky_night")
+
+    # 夜间环境反射
+    w, h = 256, 128
+    env = Image.new("RGB", (w, h))
+    fill_vgrad(env, [(0.0, (14, 16, 40)), (0.42, (34, 40, 72)), (0.5, (58, 64, 96))], (18, 20, 30))
+    env = env.filter(ImageFilter.GaussianBlur(3))
+    env.save(OUT + r"\env_night.png")
+    print("saved env_night")
+
+
+def make_marble():
+    """1024x1024 深色大理石地台贴图：暗底 + 细微亮脉络（低对比，近看才见）。"""
+    import numpy as np
+    s = 1024
+    yy, xx = np.mgrid[0:s, 0:s].astype(np.float32) / s
+    # 多层正弦脉络 + 值噪声感
+    v = np.zeros((s, s), np.float32)
+    for k, (fx, fy, ph, amp) in enumerate([
+        (2.2, 1.1, 0.4, 1.0), (3.7, 2.3, 1.9, 0.7), (6.1, 4.4, 3.2, 0.45), (9.3, 7.7, 5.1, 0.28),
+    ]):
+        v += amp * np.sin((xx * fx + yy * fy) * 6.28318 + ph)
+    v = v / 2.4
+    vein = np.clip(1.0 - np.abs(v) * 2.2, 0, 1) ** 3.2        # 细脉络
+    mottle = np.clip(0.5 + 0.35 * np.sin((xx * 3.1 - yy * 2.2) * 6.28318 + 1.3), 0, 1)
+    base = 0.085 + 0.045 * mottle                              # 暗灰底
+    lum = np.clip(base + vein * 0.10, 0, 1)
+    px = np.stack([lum * 1.00, lum * 1.01, lum * 1.06], -1)    # 微微偏冷
+    Image.fromarray((np.clip(px, 0, 1) * 255).astype(np.uint8), "RGB").save(OUT + r"\floor_marble.png")
+    print("saved floor_marble")
+
+
 if __name__ == "__main__":
     make_sky(True)
     make_sky(False)
     make_env(True)
     make_env(False)
+    make_night()
+    make_marble()
